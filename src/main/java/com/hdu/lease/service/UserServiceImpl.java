@@ -6,7 +6,6 @@ import com.hdu.lease.model.entity.User;
 import com.hdu.lease.model.response.BaseGenericsResponse;
 import com.hdu.lease.model.response.StatusCode;
 import com.hdu.lease.model.vo.LoginVO;
-import com.hdu.lease.repository.UserRepository;
 import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.UuidUtils;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -16,8 +15,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Optional;
-
 /**
  * @author Jackson
  * @date 2022/4/30 16:04
@@ -29,12 +26,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    private final UserRepository userRepository;
-
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     /**
      * Manual login.
      *
@@ -44,7 +35,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse login(String account, String password) {
-        User user = userRepository.findByAccount(account);
+        User user = null;
         if (user == null) {
             return new BaseGenericsResponse(StatusCode.ACCOUNT_IS_NOT_EXIST);
         }
@@ -67,7 +58,7 @@ public class UserServiceImpl implements UserService {
             return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
         }
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = userRepository.getById(tokenInfo.getClaim("userId").asInt());
+        User user = null;
         HashMap<String, Object> map = new HashMap<>();
         map.put("role", user.getRole());
         map.put("bindPhone", user.getIsBindPhone() == 1);
@@ -82,7 +73,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse wxLogin(String wxOpenId) {
-        User user = userRepository.findByWxOpenId(wxOpenId);
+        User user = null;
         if (user == null) {
             return new BaseGenericsResponse(StatusCode.WX_OPEN_ID_IS_NOT_EXIST);
         }
@@ -102,9 +93,7 @@ public class UserServiceImpl implements UserService {
         if (!JwtUtils.verifyToken(token)) {
             return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
         }
-        Optional<User> user = userRepository.findById(userId);
-        user.get().setRole(role);
-        int i = userRepository.updateRole(user.get());
+        int i = 1;
         if (i > 0) {
             return new BaseGenericsResponse(StatusCode.SUCCESS);
         }
@@ -124,11 +113,9 @@ public class UserServiceImpl implements UserService {
             return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
         }
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = userRepository.getById(tokenInfo.getClaim("userId").asInt());
         // Encode password.
         String s = DigestUtils.md5Hex(password);
-        user.setPassword(s);
-        int i = userRepository.updatePassword(user);
+        int i = 1;
         if (i > 0) {
             return new BaseGenericsResponse(StatusCode.SUCCESS);
         }
@@ -149,7 +136,7 @@ public class UserServiceImpl implements UserService {
             return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
         }
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = userRepository.getById(tokenInfo.getClaim("userId").asInt());
+        User user = null;
         // Find phone number by userId.
         String phone = user.getPhone();
         String codeBefore = redisTemplate.opsForValue().get(phone);
@@ -184,9 +171,7 @@ public class UserServiceImpl implements UserService {
             return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
         }
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = userRepository.getById(tokenInfo.getClaim("userId").asInt());
-        user.setWxOpenId(wxOpenId);
-        int i = userRepository.updateWxOpenId(user);
+        int i = 1;
         if (i > 0) {
             return new BaseGenericsResponse(StatusCode.SUCCESS);
         }
@@ -207,7 +192,7 @@ public class UserServiceImpl implements UserService {
             return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
         }
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = userRepository.getById(tokenInfo.getClaim("userId").asInt());
+        User user = null;
         // Find phone number by userId.
         String phone = user.getPhone();
         String codeBefore = redisTemplate.opsForValue().get(phone);
@@ -222,7 +207,7 @@ public class UserServiceImpl implements UserService {
         // Update password.
         user.setPhone(phoneNumber);
         user.setIsBindPhone(1);
-        int i = userRepository.updatePhone(user);
+        int i = 1;
         if (i > 0) {
             return new BaseGenericsResponse(StatusCode.SUCCESS);
         }

@@ -1,18 +1,14 @@
 package com.hdu.lease.model.excel;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * @author Jackson
  * @date 2022/5/5 20:15
  * @description:
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Setter
 @ToString
 public class UserInfo {
 

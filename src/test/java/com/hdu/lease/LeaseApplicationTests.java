@@ -8,7 +8,6 @@ import com.alibaba.excel.util.StringUtils;
 import com.hdu.lease.model.dto.TokenDTO;
 import com.hdu.lease.model.entity.User;
 import com.hdu.lease.model.excel.UserInfo;
-import com.hdu.lease.repository.UserRepository;
 import com.hdu.lease.service.UserService;
 import com.hdu.lease.sms.SmsConfig;
 import com.hdu.lease.sms.SmsUtils;
@@ -45,9 +44,6 @@ import java.util.List;
 class LeaseApplicationTests {
 
     private UserService userService;
-
-    @Autowired
-    private  UserRepository userRepository;
 
     @Autowired
     private SmsUtils smsUtils;
@@ -184,7 +180,7 @@ class LeaseApplicationTests {
     @Test
     void testJwt() {
 
-        User user = userRepository.findByAccount("19052240");
+        User user = null;
         // create token
         TokenDTO tokenDTO = new TokenDTO();
         tokenDTO.setRole(user.getRole());
@@ -242,7 +238,7 @@ class LeaseApplicationTests {
                 log.info("{}条数据，开始存储数据库！", cachedDataList.size());
                 for (UserInfo userInfo : cachedDataList) {
                     log.info(userInfo.toString());
-                    User byAccount = userRepository.findByAccount(userInfo.getAccount());
+                    User byAccount = null;
                     if (byAccount == null) {
                         User user = new User();
                         user.setUsername(userInfo.getUsername());
@@ -250,7 +246,7 @@ class LeaseApplicationTests {
                         user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
                         user.setPhone(userInfo.getPhone());
                         user.setIsBindPhone(StringUtils.isEmpty(userInfo.getPhone()) ? 0 : 1);
-                        User save = userRepository.save(user);
+//                        User save = userRepository.save(user);
                     }
                 }
                 log.info("存储数据库成功！");

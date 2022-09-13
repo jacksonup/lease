@@ -2,6 +2,7 @@ package com.hdu.lease.model.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * @author Jackson
@@ -10,6 +11,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 public class BaseGenericsResponse {
     private Integer code;
     private String msg;
