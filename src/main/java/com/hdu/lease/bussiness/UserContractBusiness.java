@@ -26,7 +26,7 @@ public class UserContractBusiness {
         }
     }
 
-    ;
+
 
     static {
         try {
@@ -47,15 +47,7 @@ public class UserContractBusiness {
         return "10001";
     }
 
-    public String setUser(String userId, String infoId, String account, String name, String salt, String phone, String password, String role) throws Exception {
-        if(contract.isValid()) {
-            if (!contract.userInserted(account).send()) {
-                TransactionReceipt receipt = contract.setUser(new BigInteger(userId), new BigInteger(infoId), account, name, salt, phone, password, new BigInteger(role)).send();
-                return "10000";
-            }
-        }
-        return "10001";
-    }
+
 
     public String modifyPhoneByAccount(String account,String phone) throws Exception {
         if(contract.isValid()){
