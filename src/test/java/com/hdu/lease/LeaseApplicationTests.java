@@ -4,31 +4,20 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
-import com.alibaba.excel.util.StringUtils;
-import com.hdu.lease.constant.BusinessConstant;
 import com.hdu.lease.contract.UserContract;
-import com.hdu.lease.pojo.dto.TokenDTO;
 import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.excel.UserInfo;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.service.UserService;
-import com.hdu.lease.sms.SmsConfig;
+import com.hdu.lease.property.SmsProperties;
 import com.hdu.lease.sms.SmsUtils;
 import com.hdu.lease.utils.ExcelUtils;
-import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.RandomNumberUtils;
-import com.hdu.lease.utils.UuidUtils;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
-
-//导入可选配置类
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
-
-// 导入对应SMS模块的client
 import com.tencentcloudapi.sms.v20210111.SmsClient;
-
-// 导入要请求接口对应的request response类
 import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import jdk.nashorn.internal.ir.annotations.Ignore;
@@ -40,10 +29,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.File;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
@@ -57,10 +49,71 @@ class LeaseApplicationTests {
     private SmsUtils smsUtils;
 
     @Autowired
-    private SmsConfig smsConfig;
+    private SmsProperties smsConfig;
 
     @Setter(onMethod_ = @Autowired)
     private ContractProperties contractProperties;
+
+    /**
+     * 部署合约
+     *
+     * @throws Exception
+     */
+    @Test
+    void deployContract() throws Exception {
+        // 监听本地链
+        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
+
+        // 生成资格凭证
+        Credentials credentials = Credentials.create(contractProperties.getCredentials());
+
+        StaticGasProvider provider = new StaticGasProvider(
+                contractProperties.getGasPrice(),
+                contractProperties.getGasLimit());
+
+        // 部署合约
+        UserContract userContract = UserContract.deploy(web3j, credentials, provider).send();
+        log.info("UserContract合约地址：{}", userContract.getContractAddress());
+    }
+
+    @Test
+    void addUser() throws Exception {
+        // 监听本地链
+        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
+
+        // 生成资格凭证
+        Credentials credentials = Credentials.create(contractProperties.getCredentials());
+
+        StaticGasProvider provider = new StaticGasProvider(
+                contractProperties.getGasPrice(),
+                contractProperties.getGasLimit());
+
+        // 加载合约
+        UserContract usercontract = UserContract.load(contractProperties.getAddress(), web3j, credentials, provider);
+//        BigInteger userId,infoId,role;
+//        String account,name,salt,phone,password;
+//        userId = new BigInteger("0");
+//        infoId = new BigInteger("0");
+//        role = new BigInteger("0");
+//        account = "19052240";
+//        name = "陈宇彬";
+//        salt = "salt";
+//        phone = "15906888912";
+//        password = "827ccb0eea8a706c4c34a16891f84e7b";
+//        TransactionReceipt receipt = usercontract.setUser(account,name,salt,phone,password,role).sendAsync().get();
+        User user = new User();
+        user.setAccount("19052241");
+        user.setPhone("15906888911");
+        user.setUsername("陈宇彬");
+        user.setIsBindPhone(new BigInteger("1"));
+        user.setPassword("827ccb0eea8a706c4c34a16891f84e7b");
+        user.setRole(new BigInteger("0"));
+        user.setStatus(new BigInteger("0"));
+        List<User> list = new ArrayList<>();
+        list.add(user);
+        usercontract.batchAddUser(list).sendAsync().get();
+    }
+
 
     @Test
     void contextLoads() {
@@ -96,7 +149,7 @@ class LeaseApplicationTests {
             clientProfile.setHttpProfile(httpProfile);
             /* 实例化要请求产品(以sms为例)的client对象
              * 第二个参数是地域信息，可以直接填写字符串ap-guangzhou，支持的地域列表参考 https://cloud.tencent.com/document/api/382/52071#.E5.9C.B0.E5.9F.9F.E5.88.97.E8.A1.A8 */
-            SmsClient client = new SmsClient(cred, "ap-guangzhou",clientProfile);
+            SmsClient client = new SmsClient(cred, "ap-guangzhou", clientProfile);
             /* 实例化一个请求对象，根据调用的接口和实际情况，可以进一步设置请求参数
              * 你可以直接查询SDK源码确定接口有哪些属性可以设置
              * 属性可能是基本类型，也可能引用了另一个数据结构
@@ -262,20 +315,6 @@ class LeaseApplicationTests {
                 log.info("存储数据库成功！");
             }
         }).sheet().doRead();
-    }
-
-    @Test
-    void testContract() throws Exception {
-        // 监听本地链
-        Web3j web3j = Web3j.build(new HttpService("HTTP://127.0.0.1:8545"));
-
-        // 生成资格凭证
-        Credentials credentials = Credentials.create("5b716ab1952bdd155b7bacd4dd29bbf5551f456d220da195098581e9d184d536");
-        log.info("credentials：{}", credentials);
-
-
-        // 部署合约
-        UserContract contract = UserContract.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync().get();
     }
 
 }

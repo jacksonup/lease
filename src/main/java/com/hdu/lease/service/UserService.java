@@ -19,7 +19,7 @@ public interface UserService {
      * @param password
      * @return
      */
-    BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws ExecutionException, InterruptedException;
+    BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws Exception;
 
     /**
      * Auto login.

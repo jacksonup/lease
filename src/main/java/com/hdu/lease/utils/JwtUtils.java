@@ -25,8 +25,7 @@ public class JwtUtils {
      */
     public static String createToken(TokenDTO tokenDTO) {
         JWTCreator.Builder builder = JWT.create();
-        builder.withClaim("userId", tokenDTO.getUserId());
-        builder.withClaim("uuid", tokenDTO.getUuid());
+        builder.withClaim("account", tokenDTO.getAccount());
         builder.withClaim("role", tokenDTO.getRole());
         return builder.sign(Algorithm.HMAC256(SING));
     }

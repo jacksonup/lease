@@ -1,10 +1,8 @@
 package com.hdu.lease.property;
 
-import com.hdu.lease.pojo.response.base.BaseResponse;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.math.BigInteger;
 
 /**
@@ -19,9 +17,14 @@ import java.math.BigInteger;
 public class ContractProperties {
 
     /**
-     * 监听本地ganache地址
+     * 部署合约地址
      */
     private String address;
+
+    /**
+     * 监听本地ganache地址
+     */
+    private String httpService;
 
     /**
      * 部署合约账号地址

@@ -1,8 +1,9 @@
-package com.hdu.lease.sms;
+package com.hdu.lease.property;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
@@ -10,11 +11,11 @@ import org.springframework.context.annotation.PropertySource;
  * @date 2022/5/1 10:44
  * @description: sms config
  */
-@Data
-@Configuration
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "tencent.sms")
 @PropertySource("classpath:application.yml")
-public class SmsConfig {
+public class SmsProperties {
 
     private String secretId;
 

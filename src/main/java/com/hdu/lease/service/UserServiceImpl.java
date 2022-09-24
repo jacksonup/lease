@@ -3,68 +3,96 @@ package com.hdu.lease.service;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hdu.lease.constant.BusinessConstant;
 import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.exception.BaseBizException;
 import com.hdu.lease.pojo.dto.TokenDTO;
 import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
+import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.JwtUtils;
-import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
-
 import javax.annotation.PostConstruct;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.net.BindException;
 
 /**
  * @author Jackson
  * @date 2022/4/30 16:04
  * @description: User service implementation.
  */
+@Slf4j
 @Service("userService")
 public class UserServiceImpl implements UserService {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    @PostConstruct
-    private void init() throws Exception {
-        // 部署合约
-//        contract.load()
-        List<User> user = new ArrayList<>();
-        User user1 = new User("19052240","lyl","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
-        user.add(user1);
-        user1 = new User("19052241","cyb","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
-        user.add(user1);
+    @Setter(onMethod_ = @Autowired)
+    private ContractProperties contractProperties;
 
-//        contract.batchAddUser(user).send();
+    private UserContract usercontract;
+
+    @PostConstruct
+    private void init() {
+        // 监听本地链
+        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
+
+        // 生成资格凭证
+        Credentials credentials = Credentials.create(contractProperties.getCredentials());
+
+        StaticGasProvider provider = new StaticGasProvider(
+                contractProperties.getGasPrice(),
+                contractProperties.getGasLimit());
+
+        // 加载合约
+        usercontract = UserContract.load(contractProperties.getAddress(), web3j, credentials, provider);
     }
 
     /**
-     * Manual login.
+     * 登录
      *
      * @param account
      * @param password
      * @return
      */
     @Override
-    public BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws ExecutionException, InterruptedException {
+    public BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws Exception {
         // 获取用户信息
-//        User user= contract.getUserInfo(account).sendAsync().get();
-        System.out.println(1);
-        return null;
+        User user = usercontract.getUserInfo(account).send();
+        log.info("用户信息:{}", user);
+
+        // 校验用户存在性
+        if (user.getAccount().isEmpty()) {
+            throw new BaseBizException("100041", "学号", account);
+        }
+
+        // 校验密码
+        String encryptPassword = DigestUtils.md5DigestAsHex(password.getBytes());
+        System.out.println(encryptPassword);
+        if(!encryptPassword.equals(user.getPassword())) {
+            log.info("登录密码错误");
+            throw new BaseBizException("101003");
+        }
+
+        // 生成token
+        TokenDTO tokenDTO = new TokenDTO();
+        tokenDTO.setRole(user.getRole().intValue());
+        tokenDTO.setAccount(user.getAccount());
+
+        LoginInfoResponse loginInfoResponse = new LoginInfoResponse();
+        loginInfoResponse.setRole(user.getRole().intValue());
+        loginInfoResponse.setBindPhone(user.getIsBindPhone().intValue() == 1);
+        loginInfoResponse.setToken(JwtUtils.createToken(tokenDTO));
+
+        return new BaseGenericsResponse<LoginInfoResponse>();
 
     }
 
@@ -103,7 +131,6 @@ public class UserServiceImpl implements UserService {
 //        return new BaseGenericsResponse(StatusCode.SUCCESS, createLoginVO(user));
         return null;
     }
-
 
     /**
      * Update role.

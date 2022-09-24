@@ -14,9 +14,7 @@ import lombok.ToString;
 @ToString
 public class TokenDTO {
 
-    private Integer userId;
-
-    private String uuid;
+    private String account;
 
     private Integer role;
 }

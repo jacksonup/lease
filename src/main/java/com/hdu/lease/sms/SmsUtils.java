@@ -1,5 +1,6 @@
 package com.hdu.lease.sms;
 
+import com.hdu.lease.property.SmsProperties;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.common.profile.ClientProfile;
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class SmsUtils {
 
     @Autowired
-    private SmsConfig smsConfig;
+    private SmsProperties smsConfig;
 
     /**
      * 发送短信

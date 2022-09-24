@@ -29,9 +29,9 @@ public class UserController {
      * @param password
      * @return
      */
-    @PostMapping("/login")
+    @RequestMapping("/login")
     @ResponseBody
-    public BaseGenericsResponse<LoginInfoResponse> login(String account , String password) throws ExecutionException, InterruptedException {
+    public BaseGenericsResponse<LoginInfoResponse> login(String account , String password) throws Exception {
         return userService.login(account, password);
     }
 
