@@ -1,6 +1,8 @@
-package com.hdu.lease.model.excel;
+package com.hdu.lease.pojo.excel;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * @author Jackson
@@ -11,8 +13,6 @@ import lombok.*;
 @Setter
 @ToString
 public class UserInfo {
-
-
     /**
      * Account.
      */
@@ -32,5 +32,4 @@ public class UserInfo {
      * Phone.
      */
     private String phone;
-
 }

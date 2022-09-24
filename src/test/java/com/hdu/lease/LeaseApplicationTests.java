@@ -5,9 +5,12 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
 import com.alibaba.excel.util.StringUtils;
-import com.hdu.lease.model.dto.TokenDTO;
-import com.hdu.lease.model.entity.User;
-import com.hdu.lease.model.excel.UserInfo;
+import com.hdu.lease.constant.BusinessConstant;
+import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.pojo.dto.TokenDTO;
+import com.hdu.lease.pojo.entity.User;
+import com.hdu.lease.pojo.excel.UserInfo;
+import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.service.UserService;
 import com.hdu.lease.sms.SmsConfig;
 import com.hdu.lease.sms.SmsUtils;
@@ -29,11 +32,16 @@ import com.tencentcloudapi.sms.v20210111.SmsClient;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.web3j.crypto.Credentials;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
 
 import java.io.File;
 import java.util.List;
@@ -51,6 +59,8 @@ class LeaseApplicationTests {
     @Autowired
     private SmsConfig smsConfig;
 
+    @Setter(onMethod_ = @Autowired)
+    private ContractProperties contractProperties;
 
     @Test
     void contextLoads() {
@@ -180,16 +190,16 @@ class LeaseApplicationTests {
     @Test
     void testJwt() {
 
-        User user = null;
-        // create token
-        TokenDTO tokenDTO = new TokenDTO();
-        tokenDTO.setRole(user.getRole());
-        tokenDTO.setUuid(UuidUtils.createUuid());
-        tokenDTO.setUserId(user.getId());
-        String token = JwtUtils.createToken(tokenDTO);
-        System.out.println(JwtUtils.getTokenInfo(token).getClaim("uuid").asString());
-        System.out.println(JwtUtils.getTokenInfo(token).getClaim("userId").asInt());
-        System.out.println(JwtUtils.getTokenInfo(token).getClaim("role").asInt());
+//        User user = null;
+//        // create token
+//        TokenDTO tokenDTO = new TokenDTO();
+//        tokenDTO.setRole(user.getRole());
+//        tokenDTO.setUuid(UuidUtils.createUuid());
+//        tokenDTO.setUserId(user.getId());
+//        String token = JwtUtils.createToken(tokenDTO);
+//        System.out.println(JwtUtils.getTokenInfo(token).getClaim("uuid").asString());
+//        System.out.println(JwtUtils.getTokenInfo(token).getClaim("userId").asInt());
+//        System.out.println(JwtUtils.getTokenInfo(token).getClaim("role").asInt());
     }
 
     @Test
@@ -245,13 +255,27 @@ class LeaseApplicationTests {
                         user.setAccount(userInfo.getAccount());
                         user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
                         user.setPhone(userInfo.getPhone());
-                        user.setIsBindPhone(StringUtils.isEmpty(userInfo.getPhone()) ? 0 : 1);
+//                        user.setIsBindPhone(StringUtils.isEmpty(userInfo.getPhone()) ? 0 : 1);
 //                        User save = userRepository.save(user);
                     }
                 }
                 log.info("存储数据库成功！");
             }
         }).sheet().doRead();
+    }
+
+    @Test
+    void testContract() throws Exception {
+        // 监听本地链
+        Web3j web3j = Web3j.build(new HttpService("HTTP://127.0.0.1:8545"));
+
+        // 生成资格凭证
+        Credentials credentials = Credentials.create("5b716ab1952bdd155b7bacd4dd29bbf5551f456d220da195098581e9d184d536");
+        log.info("credentials：{}", credentials);
+
+
+        // 部署合约
+        UserContract contract = UserContract.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync().get();
     }
 
 }

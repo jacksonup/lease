@@ -1,20 +1,33 @@
 package com.hdu.lease.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.hdu.lease.model.dto.TokenDTO;
-import com.hdu.lease.model.entity.User;
-import com.hdu.lease.model.response.BaseGenericsResponse;
-import com.hdu.lease.model.response.StatusCode;
-import com.hdu.lease.model.vo.LoginVO;
+import com.hdu.lease.constant.BusinessConstant;
+import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.pojo.dto.TokenDTO;
+import com.hdu.lease.pojo.entity.User;
+import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.UuidUtils;
+import lombok.Setter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Credentials;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.RemoteFunctionCall;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.StaticGasProvider;
 
+import javax.annotation.PostConstruct;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author Jackson
  * @date 2022/4/30 16:04
@@ -26,6 +39,19 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
+    @PostConstruct
+    private void init() throws Exception {
+        // 部署合约
+//        contract.load()
+        List<User> user = new ArrayList<>();
+        User user1 = new User("19052240","lyl","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
+        user.add(user1);
+        user1 = new User("19052241","cyb","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
+        user.add(user1);
+
+//        contract.batchAddUser(user).send();
+    }
+
     /**
      * Manual login.
      *
@@ -34,16 +60,12 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public BaseGenericsResponse login(String account, String password) {
-        User user = null;
-        if (user == null) {
-            return new BaseGenericsResponse(StatusCode.ACCOUNT_IS_NOT_EXIST);
-        }
-        String s = DigestUtils.md5Hex(password);
-        if (!user.getPassword().equals(s)) {
-            return new BaseGenericsResponse(StatusCode.ACCOUNT_PASSWORD_NOT_MATCH);
-        }
-        return new BaseGenericsResponse(StatusCode.SUCCESS, createLoginVO(user));
+    public BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws ExecutionException, InterruptedException {
+        // 获取用户信息
+//        User user= contract.getUserInfo(account).sendAsync().get();
+        System.out.println(1);
+        return null;
+
     }
 
     /**
@@ -54,15 +76,16 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse autoLogin(String token) {
-        if (!JwtUtils.verifyToken(token)) {
-            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-        }
-        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = null;
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("role", user.getRole());
-        map.put("bindPhone", user.getIsBindPhone() == 1);
-        return new BaseGenericsResponse(StatusCode.SUCCESS, map);
+//        if (!JwtUtils.verifyToken(token)) {
+//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
+//        }
+//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
+//        User user = null;
+//        HashMap<String, Object> map = new HashMap<>();
+//        map.put("role", user.getRole());
+//        map.put("bindPhone", user.getIsBindPhone() == 1);
+//        return new BaseGenericsResponse(StatusCode.SUCCESS, map);
+        return null;
     }
 
     /**
@@ -73,12 +96,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse wxLogin(String wxOpenId) {
-        User user = null;
-        if (user == null) {
-            return new BaseGenericsResponse(StatusCode.WX_OPEN_ID_IS_NOT_EXIST);
-        }
-        return new BaseGenericsResponse(StatusCode.SUCCESS, createLoginVO(user));
+//        User user = null;
+//        if (user == null) {
+//            return new BaseGenericsResponse(StatusCode.WX_OPEN_ID_IS_NOT_EXIST);
+//        }
+//        return new BaseGenericsResponse(StatusCode.SUCCESS, createLoginVO(user));
+        return null;
     }
+
 
     /**
      * Update role.
@@ -90,14 +115,15 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse updateRole(String token, Integer userId, Integer role) {
-        if (!JwtUtils.verifyToken(token)) {
-            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-        }
-        int i = 1;
-        if (i > 0) {
-            return new BaseGenericsResponse(StatusCode.SUCCESS);
-        }
-        return new BaseGenericsResponse(StatusCode.FAIL);
+        return null;
+//        if (!JwtUtils.verifyToken(token)) {
+//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
+//        }
+//        int i = 1;
+//        if (i > 0) {
+//            return new BaseGenericsResponse(StatusCode.SUCCESS);
+//        }
+//        return new BaseGenericsResponse(StatusCode.FAIL);
     }
 
     /**
@@ -109,17 +135,18 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse updatePassword(String token, String password) {
-        if (!JwtUtils.verifyToken(token)) {
-            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-        }
-        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        // Encode password.
-        String s = DigestUtils.md5Hex(password);
-        int i = 1;
-        if (i > 0) {
-            return new BaseGenericsResponse(StatusCode.SUCCESS);
-        }
-        return new BaseGenericsResponse(StatusCode.FAIL);
+        return null;
+//        if (!JwtUtils.verifyToken(token)) {
+//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
+//        }
+//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
+//        // Encode password.
+//        String s = DigestUtils.md5Hex(password);
+//        int i = 1;
+//        if (i > 0) {
+//            return new BaseGenericsResponse(StatusCode.SUCCESS);
+//        }
+//        return new BaseGenericsResponse(StatusCode.FAIL);
     }
 
     /**
@@ -132,30 +159,31 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse findPassword(String token, String password, String code) {
-        if (!JwtUtils.verifyToken(token)) {
-            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-        }
-        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = null;
-        // Find phone number by userId.
-        String phone = user.getPhone();
-        String codeBefore = redisTemplate.opsForValue().get(phone);
-        // if the coedBefore is empty, it means the code is overdue.
-        if (StringUtils.isEmpty(codeBefore)) {
-            return new BaseGenericsResponse(StatusCode.CODE_IS_OVERDUE);
-        }
-        // Verify code whether right.
-        if (!code.equals(codeBefore)) {
-            return new BaseGenericsResponse(StatusCode.CODE_IS_NOT_CORRECT);
-        }
-        // Update password.
-        BaseGenericsResponse baseResponse = updatePassword(token, password);
-        // delete the code.
-        Boolean flag = redisTemplate.delete(phone);
-        if (Boolean.TRUE.equals(flag)) {
-            return baseResponse;
-        }
-        return new BaseGenericsResponse(StatusCode.FAIL);
+        return null;
+//        if (!JwtUtils.verifyToken(token)) {
+//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
+//        }
+//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
+//        User user = null;
+//        // Find phone number by userId.
+//        String phone = user.getPhone();
+//        String codeBefore = redisTemplate.opsForValue().get(phone);
+//        // if the coedBefore is empty, it means the code is overdue.
+//        if (StringUtils.isEmpty(codeBefore)) {
+//            return new BaseGenericsResponse(StatusCode.CODE_IS_OVERDUE);
+//        }
+//        // Verify code whether right.
+//        if (!code.equals(codeBefore)) {
+//            return new BaseGenericsResponse(StatusCode.CODE_IS_NOT_CORRECT);
+//        }
+//        // Update password.
+//        BaseGenericsResponse baseResponse = updatePassword(token, password);
+//        // delete the code.
+//        Boolean flag = redisTemplate.delete(phone);
+//        if (Boolean.TRUE.equals(flag)) {
+//            return baseResponse;
+//        }
+//        return new BaseGenericsResponse(StatusCode.FAIL);
     }
 
     /**
@@ -167,15 +195,16 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse updateWx(String token, String wxOpenId) {
-        if (!JwtUtils.verifyToken(token)) {
-            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-        }
-        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        int i = 1;
-        if (i > 0) {
-            return new BaseGenericsResponse(StatusCode.SUCCESS);
-        }
-        return new BaseGenericsResponse(StatusCode.FAIL);
+        return null;
+//        if (!JwtUtils.verifyToken(token)) {
+//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
+//        }
+//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
+//        int i = 1;
+//        if (i > 0) {
+//            return new BaseGenericsResponse(StatusCode.SUCCESS);
+//        }
+//        return new BaseGenericsResponse(StatusCode.FAIL);
     }
 
     /**
@@ -188,30 +217,31 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse updatePhone(String token, String phoneNumber, String code) {
-        if (!JwtUtils.verifyToken(token)) {
-            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-        }
-        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-        User user = null;
-        // Find phone number by userId.
-        String phone = user.getPhone();
-        String codeBefore = redisTemplate.opsForValue().get(phone);
-        // if the coedBefore is empty, it means the code is overdue.
-        if (StringUtils.isEmpty(codeBefore)) {
-            return new BaseGenericsResponse(StatusCode.CODE_IS_OVERDUE);
-        }
-        // Verify code whether right.
-        if (!code.equals(codeBefore)) {
-            return new BaseGenericsResponse(StatusCode.CODE_IS_NOT_CORRECT);
-        }
-        // Update password.
-        user.setPhone(phoneNumber);
-        user.setIsBindPhone(1);
-        int i = 1;
-        if (i > 0) {
-            return new BaseGenericsResponse(StatusCode.SUCCESS);
-        }
-        return new BaseGenericsResponse(StatusCode.FAIL);
+        return null;
+//        if (!JwtUtils.verifyToken(token)) {
+//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
+//        }
+//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
+//        User user = null;
+//        // Find phone number by userId.
+//        String phone = user.getPhone();
+//        String codeBefore = redisTemplate.opsForValue().get(phone);
+//        // if the coedBefore is empty, it means the code is overdue.
+//        if (StringUtils.isEmpty(codeBefore)) {
+//            return new BaseGenericsResponse(StatusCode.CODE_IS_OVERDUE);
+//        }
+//        // Verify code whether right.
+//        if (!code.equals(codeBefore)) {
+//            return new BaseGenericsResponse(StatusCode.CODE_IS_NOT_CORRECT);
+//        }
+//        // Update password.
+//        user.setPhone(phoneNumber);
+//        user.setIsBindPhone(1);
+//        int i = 1;
+//        if (i > 0) {
+//            return new BaseGenericsResponse(StatusCode.SUCCESS);
+//        }
+//        return new BaseGenericsResponse(StatusCode.FAIL);
     }
 
     /**
@@ -220,18 +250,19 @@ public class UserServiceImpl implements UserService {
      * @param user
      * @return
      */
-    private static LoginVO createLoginVO(User user) {
-        // create token
-        TokenDTO tokenDTO = new TokenDTO();
-        tokenDTO.setRole(user.getRole());
-        tokenDTO.setUuid(UuidUtils.createUuid());
-        tokenDTO.setUserId(user.getId());
-        String token = JwtUtils.createToken(tokenDTO);
-        // create baseResponse
-        LoginVO loginVO = new LoginVO();
-        loginVO.setRole(user.getRole());
-        loginVO.setBindPhone(user.getIsBindPhone() == 1);
-        loginVO.setToken(token);
-        return loginVO;
+    private static LoginInfoResponse createLoginVO(User user) {
+        return null;
+//        // create token
+//        TokenDTO tokenDTO = new TokenDTO();
+//        tokenDTO.setRole(user.getRole());
+//        tokenDTO.setUuid(UuidUtils.createUuid());
+//        tokenDTO.setUserId(user.getId());
+//        String token = JwtUtils.createToken(tokenDTO);
+//        // create baseResponse
+//        LoginInfoResponse loginVO = new LoginInfoResponse();
+//        loginVO.setRole(user.getRole());
+//        loginVO.setBindPhone(user.getIsBindPhone() == 1);
+//        loginVO.setToken(token);
+//        return loginVO;
     }
 }

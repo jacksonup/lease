@@ -1,8 +1,13 @@
 package com.hdu.lease.controller;
 
-import com.hdu.lease.model.response.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.service.UserService;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jackson
@@ -14,11 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserController {
 
-    private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    @Setter(onMethod_ = @Autowired)
+    private UserService userService;
 
     /**
      * Manual login.
@@ -29,7 +31,7 @@ public class UserController {
      */
     @PostMapping("/login")
     @ResponseBody
-    public BaseGenericsResponse login(String account , String password) {
+    public BaseGenericsResponse<LoginInfoResponse> login(String account , String password) throws ExecutionException, InterruptedException {
         return userService.login(account, password);
     }
 

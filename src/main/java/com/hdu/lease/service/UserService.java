@@ -1,6 +1,9 @@
 package com.hdu.lease.service;
 
-import com.hdu.lease.model.response.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.LoginInfoResponse;
+import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jackson
@@ -16,7 +19,7 @@ public interface UserService {
      * @param password
      * @return
      */
-    BaseGenericsResponse login(String account, String password);
+    BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws ExecutionException, InterruptedException;
 
     /**
      * Auto login.

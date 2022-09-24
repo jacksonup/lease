@@ -1,5 +1,6 @@
 package com.hdu.lease.contract;
 
+import com.hdu.lease.pojo.entity.User;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import java.math.BigInteger;
@@ -8,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import org.springframework.stereotype.Component;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -135,9 +138,9 @@ public class UserContract extends Contract {
     }
 
     //测试修改密码
-    //receipt = contract.modifyPasswordByAccount(account,"54321").send();
-    //List<UserContract.LogEventResponse> eventValues = contract.getLogEvents(receipt);
-    //System.out.println("message:" + eventValues.get(0).message + "," + "value:" + eventValues.get(0).value);
+//    receipt = contract.modifyPasswordByAccount(account,"54321").send();
+//    List<UserContract.LogEventResponse> eventValues = contract.getLogEvents(receipt);
+//    System.out.println("message:" + eventValues.get(0).message + "," + "value:" + eventValues.get(0).value);
     public Flowable<ReturnUserInfoEventResponse> returnUserInfoEventFlowable(EthFilter filter) {
         return web3j.ethLogFlowable(filter).map(new Function<Log, ReturnUserInfoEventResponse>() {
             @Override
@@ -157,12 +160,12 @@ public class UserContract extends Contract {
         filter.addSingleTopic(EventEncoder.encode(RETURNUSERINFO_EVENT));
         return returnUserInfoEventFlowable(filter);
     }
-    //List<UserContract.User> user = new ArrayList<>();
-    //UserContract.User user1 = new UserContract.User("19052240","lyl","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
-    //user.add(user1);
-    //user1 = new UserContract.User("19052241","cyb","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
-    //user.add(user1);
-    //contract.batchAddUser(user).send();
+//    List<UserContract.User> user = new ArrayList<>();
+//    UserContract.User user1 = new UserContract.User("19052240","lyl","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
+//    user.add(user1);
+//    user1 = new UserContract.User("19052241","cyb","198xxxxxxx","12345","salt",new BigInteger("1"),new BigInteger("0"));
+//    user.add(user1);
+//    contract.batchAddUser(user).send();
     public RemoteFunctionCall<TransactionReceipt> batchAddUser(List<User> _users) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
                 FUNC_BATCHADDUSER,

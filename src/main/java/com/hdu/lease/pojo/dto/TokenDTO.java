@@ -1,4 +1,4 @@
-package com.hdu.lease.model.dto;
+package com.hdu.lease.pojo.dto;
 
 import lombok.Getter;
 import lombok.Setter;

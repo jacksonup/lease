@@ -1,6 +1,6 @@
 package com.hdu.lease.service;
 
-import com.hdu.lease.model.response.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 
 /**
  * @author Jackson

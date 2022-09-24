@@ -1,7 +1,6 @@
 package com.hdu.lease.controller;
 
-import com.hdu.lease.constant.SmsConstant;
-import com.hdu.lease.model.response.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.service.SmsService;
 import com.hdu.lease.utils.RandomNumberUtils;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +35,8 @@ public class SmsController {
         // Create n bit random number.
         String code = RandomNumberUtils.createRandomNumber(4);
         String[] templateParamSet = {code};
-        return smsService.sendSms(token, templateParamSet, SmsConstant.UPDATE_PHONE, 5L);
+        return null;
+//        return smsService.sendSms(token, templateParamSet, SmsConstant.UPDATE_PHONE, 5L);
     }
 
     /**
@@ -52,6 +52,7 @@ public class SmsController {
         // Create n bit random number.
         String code = RandomNumberUtils.createRandomNumber(4);
         String[] templateParamSet = {code, "1"};
-        return smsService.sendSms(token, templateParamSet, SmsConstant.UPDATE_PASSWORD, 1L);
+//        return smsService.sendSms(token, templateParamSet, SmsConstant.UPDATE_PASSWORD, 1L);
+        return null;
     }
 }

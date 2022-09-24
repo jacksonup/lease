@@ -1,4 +1,4 @@
-package com.hdu.lease.model.vo;
+package com.hdu.lease.pojo.response;
 
 import lombok.Data;
 import lombok.ToString;
@@ -10,7 +10,7 @@ import lombok.ToString;
  */
 @Data
 @ToString(callSuper = true)
-public class LoginVO {
+public class LoginInfoResponse {
 
     private String token;
 

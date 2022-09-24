@@ -13,7 +13,11 @@ tencent:
     appId: 1400671597
 
 contract:
-  credentials:
+  credentials: 84d7a384b8662ed7311c5d808133f470d7902d6aa07193c62c9b9fdeb11583b3
+  address: HTTP://127.0.0.1:8545
+  gas-price: 20000000000
+  gas-limit: 6721975
+
 
 
 
