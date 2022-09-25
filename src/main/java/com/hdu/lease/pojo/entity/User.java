@@ -28,11 +28,6 @@ public class User extends DynamicStruct {
     private String password;
 
     /**
-     * 加密盐
-     */
-    private String salt;
-
-    /**
      * 用户名
      */
     private String username;
@@ -63,22 +58,21 @@ public class User extends DynamicStruct {
         this.username = name;
         this.phone = phone;
         this.password = password;
-        this.salt = salt;
         this.role = role;
         this.status = status;
     }
 
-    public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Utf8String salt, Uint256 role, Uint256 status) {
-        super(account,name,phone,password,salt,role,status);
+    public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 role, Uint256 status) {
+        super(account,name,phone,password,role,status);
         this.account = account.getValue();
         this.username = name.getValue();
         this.phone = phone.getValue();
         this.password = password.getValue();
-        this.salt = salt.getValue();
         this.role = role.getValue();
         this.status = status.getValue();
     }
 
     public User() {
+
     }
 }

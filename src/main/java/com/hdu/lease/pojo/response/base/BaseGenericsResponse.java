@@ -14,7 +14,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class BaseGenericsResponse<T> extends BaseResponse{
+public class BaseGenericsResponse<T> {
     /**
      * 数据
      */

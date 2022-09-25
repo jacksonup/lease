@@ -12,6 +12,7 @@ import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.JwtUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -89,11 +90,10 @@ public class UserServiceImpl implements UserService {
 
         LoginInfoResponse loginInfoResponse = new LoginInfoResponse();
         loginInfoResponse.setRole(user.getRole().intValue());
-        loginInfoResponse.setBindPhone(user.getIsBindPhone().intValue() == 1);
+//        loginInfoResponse.setBindPhone(user.getIsBindPhone().intValue() == 1);
+        loginInfoResponse.setBindPhone(StringUtils.isEmpty(user.getPhone()));
         loginInfoResponse.setToken(JwtUtils.createToken(tokenDTO));
-
-        return new BaseGenericsResponse<LoginInfoResponse>();
-
+        return new BaseGenericsResponse<>(loginInfoResponse);
     }
 
     /**
