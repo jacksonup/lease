@@ -107,7 +107,7 @@ class LeaseApplicationTests {
 //        phone = "15906888912";
 //        password = "827ccb0eea8a706c4c34a16891f84e7b";
 //        TransactionReceipt receipt = usercontract.setUser(account,name,salt,phone,password,role).sendAsync().get();
-        User user = new User("19052241","陈宇彬","15906888911","827ccb0eea8a706c4c34a16891f84e7b",new BigInteger("1"),new BigInteger("0"),new BigInteger("0"));
+//        User user = new User("19052241","陈宇彬","15906888911","827ccb0eea8a706c4c34a16891f84e7b",new BigInteger("1"),new BigInteger("0"),new BigInteger("0"));
 ////        user.setAccount("19052241");
 ////        user.setPhone("15906888911");
 ////        user.setUsername("陈宇彬");
@@ -115,9 +115,9 @@ class LeaseApplicationTests {
 ////        user.setPassword("827ccb0eea8a706c4c34a16891f84e7b");
 ////        user.setRole(new BigInteger("0"));
 ////        user.setStatus(new BigInteger("0"));
-        List<User> list = new ArrayList<>();
-        list.add(user);
-        usercontract.batchAddUser(list).sendAsync().get();
+//        List<User> list = new ArrayList<>();
+//        list.add(user);
+//        usercontract.batchAddUser(list).sendAsync().get();
 
 //        User user1 = usercontract.getUserInfo("19052241").send();
 ////        Tuple7<String,String,String,String,BigInteger,BigInteger,BigInteger> user1 = usercontract.users("19052241").send();
