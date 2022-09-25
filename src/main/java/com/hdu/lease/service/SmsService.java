@@ -1,5 +1,6 @@
 package com.hdu.lease.service;
 
+import com.hdu.lease.pojo.request.BaseRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 
 /**
@@ -18,5 +19,6 @@ public interface SmsService {
      * @param timeUnit
      * @return
      */
-    BaseGenericsResponse sendSms(String token, String[] templateParamSet, String templateId, Long timeUnit);
+    BaseGenericsResponse<String> sendSms(String token, String[] templateParamSet, String templateId, Long timeUnit);
+
 }

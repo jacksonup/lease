@@ -12,6 +12,7 @@ import com.hdu.lease.service.UserService;
 import com.hdu.lease.property.SmsProperties;
 import com.hdu.lease.sms.SmsUtils;
 import com.hdu.lease.utils.ExcelUtils;
+import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.RandomNumberUtils;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -27,12 +28,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tuples.Tuple;
-import org.web3j.tuples.generated.Tuple7;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.File;
@@ -55,6 +54,9 @@ class LeaseApplicationTests {
 
     @Setter(onMethod_ = @Autowired)
     private ContractProperties contractProperties;
+
+    @Setter(onMethod_ = @Autowired)
+    private RedisTemplate<String, String> redisTemplate;
 
     /**
      * 部署合约
@@ -239,8 +241,8 @@ class LeaseApplicationTests {
 
     @Test
     void testSmsSend() {
-        String[] templateParamSet = {"231113"};
-        smsUtils.send(templateParamSet, "8615906888912", "1390135");
+        String[] templateParamSet = {"231333", "5"};
+        smsUtils.send(templateParamSet, "8615906888912", "1390134");
     }
 
     @Test
@@ -258,9 +260,9 @@ class LeaseApplicationTests {
 //        tokenDTO.setUuid(UuidUtils.createUuid());
 //        tokenDTO.setUserId(user.getId());
 //        String token = JwtUtils.createToken(tokenDTO);
-//        System.out.println(JwtUtils.getTokenInfo(token).getClaim("uuid").asString());
-//        System.out.println(JwtUtils.getTokenInfo(token).getClaim("userId").asInt());
-//        System.out.println(JwtUtils.getTokenInfo(token).getClaim("role").asInt());
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjo0ODAsImFjY291bnQiOiIxOTA1MjI0MSJ9.cK4MU8Gmvfmfwsdc87pNlhX55xmz-tnibzhV8xjqY4s";
+        System.out.println(JwtUtils.getTokenInfo(token).getClaim("account").asString());
+        System.out.println(JwtUtils.getTokenInfo(token).getClaim("role").asInt());
     }
 
     @Test
@@ -323,6 +325,15 @@ class LeaseApplicationTests {
                 log.info("存储数据库成功！");
             }
         }).sheet().doRead();
+    }
+
+
+    @Test
+    void testRedis() {
+        redisTemplate.opsForValue().set("1", "1");
+        System.out.println(redisTemplate.opsForValue().get("1"));
+        redisTemplate.opsForValue().getAndSet("1", "2");
+        System.out.println(redisTemplate.opsForValue().get("15906888912"));
     }
 
 }

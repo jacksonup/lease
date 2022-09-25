@@ -1,9 +1,9 @@
 package com.hdu.lease.service;
 
+import com.hdu.lease.pojo.dto.UserInfoDTO;
+import com.hdu.lease.pojo.request.BaseRequest;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jackson
@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 public interface UserService {
 
     /**
-     * Manual login.
+     * 登录
      *
      * @param account
      * @param password
@@ -22,20 +22,36 @@ public interface UserService {
     BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws Exception;
 
     /**
-     * Auto login.
+     * 获取用户信息
      *
      * @param token
      * @return
      */
-    BaseGenericsResponse autoLogin(String token);
+    BaseGenericsResponse<UserInfoDTO> getUserInfo(String token) throws Exception;
 
     /**
-     * Sso login.
+     * 修改手机号
      *
-     * @param wxOpenId
+     * @param baseRequest
      * @return
      */
-    BaseGenericsResponse wxLogin(String wxOpenId);
+    BaseGenericsResponse<String> modifyPhone(BaseRequest baseRequest) throws Exception;
+
+    /**
+     * 非登录态修改密码
+     *
+     * @param baseRequest
+     * @return
+     */
+    BaseGenericsResponse<String> modifyPasswordWithoutToken(BaseRequest baseRequest) throws Exception;
+
+    /**
+     * 登录态修改密码
+     *
+     * @param baseRequest
+     * @return
+     */
+    BaseGenericsResponse<String> modifyPassword(BaseRequest baseRequest) throws Exception;
 
     /**
      * Update role.
@@ -84,4 +100,5 @@ public interface UserService {
      * @return
      */
     BaseGenericsResponse updatePhone(String token, String phoneNumber, String code);
+
 }

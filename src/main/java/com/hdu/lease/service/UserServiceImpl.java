@@ -1,11 +1,13 @@
 package com.hdu.lease.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.hdu.lease.constant.BusinessConstant;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.exception.BaseBizException;
+import com.hdu.lease.mapstruct.UserInfoConvert;
 import com.hdu.lease.pojo.dto.TokenDTO;
+import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.entity.User;
+import com.hdu.lease.pojo.request.BaseRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.property.ContractProperties;
@@ -17,12 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import javax.annotation.PostConstruct;
-import java.net.BindException;
+import java.util.Objects;
 
 /**
  * @author Jackson
@@ -39,8 +42,14 @@ public class UserServiceImpl implements UserService {
     @Setter(onMethod_ = @Autowired)
     private ContractProperties contractProperties;
 
+    @Setter(onMethod_ = @Autowired)
+    private UserInfoConvert userInfoConvert;
+
     private UserContract usercontract;
 
+    /**
+     * 调用智能合约
+     */
     @PostConstruct
     private void init() {
         // 监听本地链
@@ -58,11 +67,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 登录
-     *
-     * @param account
-     * @param password
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws Exception {
@@ -91,46 +96,97 @@ public class UserServiceImpl implements UserService {
         LoginInfoResponse loginInfoResponse = new LoginInfoResponse();
         loginInfoResponse.setRole(user.getRole().intValue());
 //        loginInfoResponse.setBindPhone(user.getIsBindPhone().intValue() == 1);
-        loginInfoResponse.setBindPhone(StringUtils.isEmpty(user.getPhone()));
+        loginInfoResponse.setBindPhone(!StringUtils.isEmpty(user.getPhone()));
         loginInfoResponse.setToken(JwtUtils.createToken(tokenDTO));
         return new BaseGenericsResponse<>(loginInfoResponse);
     }
 
     /**
-     * Auto login.
-     *
-     * @param token
-     * @return
+     * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse autoLogin(String token) {
-//        if (!JwtUtils.verifyToken(token)) {
-//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-//        }
-//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-//        User user = null;
-//        HashMap<String, Object> map = new HashMap<>();
-//        map.put("role", user.getRole());
-//        map.put("bindPhone", user.getIsBindPhone() == 1);
-//        return new BaseGenericsResponse(StatusCode.SUCCESS, map);
-        return null;
+    public BaseGenericsResponse<UserInfoDTO> getUserInfo(String token) throws Exception {
+        // 校验token
+        if (!JwtUtils.verifyToken(token)) {
+            log.error("token校验失败");
+            throw new BaseBizException("100000");
+        }
+
+        // 取出account
+        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
+        String account = tokenInfo.getClaim("account").asString();
+
+        User user = usercontract.getUserInfo(account).send();
+        // 校验用户存在性
+        if (user.getAccount().isEmpty()) {
+            throw new BaseBizException("100041", "学号", account);
+        }
+
+        return new BaseGenericsResponse<>(
+                userInfoConvert.one(user)
+        );
     }
 
     /**
-     * Sso login.
-     *
-     * @param wxOpenId
-     * @return
+     * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse wxLogin(String wxOpenId) {
-//        User user = null;
-//        if (user == null) {
-//            return new BaseGenericsResponse(StatusCode.WX_OPEN_ID_IS_NOT_EXIST);
-//        }
-//        return new BaseGenericsResponse(StatusCode.SUCCESS, createLoginVO(user));
-        return null;
+    public BaseGenericsResponse<String> modifyPhone(@RequestBody BaseRequest baseRequest) throws Exception {
+        // 校验token
+        if (!JwtUtils.verifyToken(baseRequest.getToken())) {
+            log.error("token校验失败");
+            throw new BaseBizException("100000");
+        }
+        // 取出account
+        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(baseRequest.getToken());
+        String account = tokenInfo.getClaim("account").asString();
+
+        // 校验验证码是否正确
+        if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
+            return new BaseGenericsResponse<>("验证码错误");
+        }
+
+        usercontract.modifyPhoneByAccount(account, baseRequest.getPhone()).send();
+        return new BaseGenericsResponse<>("修改成功");
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> modifyPasswordWithoutToken(@RequestBody BaseRequest baseRequest) throws Exception {
+        // 校验验证码是否正确
+        if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
+            return new BaseGenericsResponse<>("验证码错误");
+        }
+
+        usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
+                DigestUtils.md5DigestAsHex(baseRequest.getPassword().getBytes())).send();
+        return new BaseGenericsResponse<>("重置成功");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> modifyPassword(@RequestBody BaseRequest baseRequest) throws Exception {
+        // 校验token
+        if (!JwtUtils.verifyToken(baseRequest.getToken())) {
+            log.error("token校验失败");
+            throw new BaseBizException("100000");
+        }
+
+        // 校验验证码是否正确
+        if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
+            return new BaseGenericsResponse<>("验证码错误");
+        }
+
+        usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
+                DigestUtils.md5DigestAsHex(baseRequest.getPassword().getBytes())).send();
+
+        return new BaseGenericsResponse<>("重置成功");
+    }
+
 
     /**
      * Update role.
@@ -271,25 +327,4 @@ public class UserServiceImpl implements UserService {
 //        return new BaseGenericsResponse(StatusCode.FAIL);
     }
 
-    /**
-     * Create loginVO, includes token and role and bindPhone.
-     *
-     * @param user
-     * @return
-     */
-    private static LoginInfoResponse createLoginVO(User user) {
-        return null;
-//        // create token
-//        TokenDTO tokenDTO = new TokenDTO();
-//        tokenDTO.setRole(user.getRole());
-//        tokenDTO.setUuid(UuidUtils.createUuid());
-//        tokenDTO.setUserId(user.getId());
-//        String token = JwtUtils.createToken(tokenDTO);
-//        // create baseResponse
-//        LoginInfoResponse loginVO = new LoginInfoResponse();
-//        loginVO.setRole(user.getRole());
-//        loginVO.setBindPhone(user.getIsBindPhone() == 1);
-//        loginVO.setToken(token);
-//        return loginVO;
-    }
 }

@@ -1,5 +1,7 @@
 package com.hdu.lease.controller;
 
+import com.hdu.lease.pojo.dto.UserInfoDTO;
+import com.hdu.lease.pojo.request.BaseRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.service.UserService;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * 用户模块控制类
+ *
  * @author Jackson
  * @date 2022/4/30 15:48
  * @description:
@@ -23,39 +27,65 @@ public class UserController {
     private UserService userService;
 
     /**
-     * Manual login.
+     * 登录
      *
      * @param account
      * @param password
      * @return
      */
-    @RequestMapping("/login")
+    @PostMapping("/login")
     @ResponseBody
     public BaseGenericsResponse<LoginInfoResponse> login(String account , String password) throws Exception {
         return userService.login(account, password);
     }
 
     /**
-     * Auto login.
+     * 获取用户信息
      *
      * @param token
      * @return
+     * @throws Exception
      */
-    @PostMapping("/autoLogin/token")
+    @GetMapping("/getUserInfo")
     @ResponseBody
-    public BaseGenericsResponse autoLogin(String token) {
-        return userService.autoLogin(token);
+    public BaseGenericsResponse<UserInfoDTO> getUserInfo(String token) throws Exception {
+        return userService.getUserInfo(token);
     }
 
     /**
-     * Sso login.
+     * 修改手机号
      *
+     * @param baseRequest
      * @return
      */
-    @PostMapping("/autoLogin/wx")
+    @PostMapping("/modifyPhone")
     @ResponseBody
-    public BaseGenericsResponse wxLogin(String wxOpenId) {
-        return userService.wxLogin(wxOpenId);
+    public BaseGenericsResponse<String> modifyPhone(BaseRequest baseRequest) throws Exception {
+        return userService.modifyPhone(baseRequest);
+    }
+
+    /**
+     * 非登录态修改密码
+     *
+     * @param baseRequest
+     * @return
+     */
+    @PostMapping("/modifyPasswordWithoutToken")
+    @ResponseBody
+    public BaseGenericsResponse<String> modifyPasswordWithoutToken(BaseRequest baseRequest) throws Exception {
+        return userService.modifyPasswordWithoutToken(baseRequest);
+    }
+
+    /**
+     * 登录态修改密码
+     *
+     * @param baseRequest
+     * @return
+     */
+    @PostMapping("/modifyPassword")
+    @ResponseBody
+    public BaseGenericsResponse<String> modifyPassword(BaseRequest baseRequest) throws Exception {
+        return userService.modifyPassword(baseRequest);
     }
 
     /**
