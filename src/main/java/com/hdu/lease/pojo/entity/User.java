@@ -38,7 +38,7 @@ public class User extends DynamicStruct {
     private String phone;
 
     /**
-     * 是否绑定手机号
+     * 是否绑定手机号1表示绑定、0表示未绑定
      */
     private BigInteger isBindPhone;
 
@@ -52,22 +52,25 @@ public class User extends DynamicStruct {
      */
     private BigInteger status;
 
-    public User(String account, String name, String phone, String password, String salt, BigInteger role, BigInteger status) {
-        super(new org.web3j.abi.datatypes.Utf8String(account),new org.web3j.abi.datatypes.Utf8String(name),new org.web3j.abi.datatypes.Utf8String(phone),new org.web3j.abi.datatypes.Utf8String(password),new org.web3j.abi.datatypes.Utf8String(salt),new org.web3j.abi.datatypes.generated.Uint256(role),new org.web3j.abi.datatypes.generated.Uint256(status));
+
+    public User(String account, String name, String phone, String password, BigInteger isBindPhone, BigInteger role, BigInteger status) {
+        super(new org.web3j.abi.datatypes.Utf8String(account),new org.web3j.abi.datatypes.Utf8String(name),new org.web3j.abi.datatypes.Utf8String(phone),new org.web3j.abi.datatypes.Utf8String(password),new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),new org.web3j.abi.datatypes.generated.Uint256(role),new org.web3j.abi.datatypes.generated.Uint256(status));
         this.account = account;
         this.username = name;
         this.phone = phone;
         this.password = password;
+        this.isBindPhone = isBindPhone;
         this.role = role;
         this.status = status;
     }
 
-    public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 role, Uint256 status) {
-        super(account,name,phone,password,role,status);
+    public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 isBindPhone, Uint256 role, Uint256 status) {
+        super(account,name,phone,password,isBindPhone,role,status);
         this.account = account.getValue();
         this.username = name.getValue();
         this.phone = phone.getValue();
         this.password = password.getValue();
+        this.isBindPhone = isBindPhone.getValue();
         this.role = role.getValue();
         this.status = status.getValue();
     }
