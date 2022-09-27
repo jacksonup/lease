@@ -44,6 +44,6 @@ public class SmsServiceImpl implements SmsService {
         smsUtils.send(templateParamSet, phoneNumber, templateId);
         // put in redis
         redisTemplate.opsForValue().set(phone, templateParamSet[0], time, TimeUnit.MINUTES);
-        return new BaseGenericsResponse<>("验证码发送成功");
+        return BaseGenericsResponse.successBaseResp("验证码发送成功");
     }
 }

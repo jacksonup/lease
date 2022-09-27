@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
         // 校验用户存在性
         if (user.getAccount().isEmpty()) {
-            throw new BaseBizException("100041", "学号", account);
+            return BaseGenericsResponse.failureBaseResp("学号不存在");
         }
 
         // 校验密码
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
         System.out.println(encryptPassword);
         if(!encryptPassword.equals(user.getPassword())) {
             log.info("登录密码错误");
-            throw new BaseBizException("101003");
+            return BaseGenericsResponse.failureBaseResp("密码错误");
         }
 
         // 生成token
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
 //        loginInfoResponse.setBindPhone(user.getIsBindPhone().intValue() == 1);
         loginInfoResponse.setBindPhone(!StringUtils.isEmpty(user.getPhone()));
         loginInfoResponse.setToken(JwtUtils.createToken(tokenDTO));
-        return new BaseGenericsResponse<>(loginInfoResponse);
+        return BaseGenericsResponse.successBaseResp(loginInfoResponse);
     }
 
     /**
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(token)) {
             log.error("token校验失败");
-            throw new BaseBizException("100000");
+            return BaseGenericsResponse.failureBaseResp("token校验失败");
         }
 
         // 取出account
@@ -119,10 +119,10 @@ public class UserServiceImpl implements UserService {
         User user = usercontract.getUserInfo(account).send();
         // 校验用户存在性
         if (user.getAccount().isEmpty()) {
-            throw new BaseBizException("100041", "学号", account);
+            return BaseGenericsResponse.failureBaseResp("学号不存在");
         }
 
-        return new BaseGenericsResponse<>(
+        return BaseGenericsResponse.successBaseResp(
                 userInfoConvert.one(user)
         );
     }
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            throw new BaseBizException("100000");
+            return BaseGenericsResponse.failureBaseResp("token校验失败");
         }
         // 取出account
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(baseRequest.getToken());
@@ -143,11 +143,11 @@ public class UserServiceImpl implements UserService {
 
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return new BaseGenericsResponse<>("验证码错误");
+            return BaseGenericsResponse.successBaseResp("验证码错误");
         }
 
         usercontract.modifyPhoneByAccount(account, baseRequest.getPhone()).send();
-        return new BaseGenericsResponse<>("修改成功");
+        return BaseGenericsResponse.successBaseResp("修改成功");
     }
 
     /**
@@ -157,12 +157,12 @@ public class UserServiceImpl implements UserService {
     public BaseGenericsResponse<String> modifyPasswordWithoutToken(@RequestBody BaseRequest baseRequest) throws Exception {
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return new BaseGenericsResponse<>("验证码错误");
+            return BaseGenericsResponse.failureBaseResp("验证码错误");
         }
 
         usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
                 DigestUtils.md5DigestAsHex(baseRequest.getPassword().getBytes())).send();
-        return new BaseGenericsResponse<>("重置成功");
+        return BaseGenericsResponse.successBaseResp("重置成功");
     }
 
     /**
@@ -173,158 +173,18 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            throw new BaseBizException("100000");
+            return BaseGenericsResponse.failureBaseResp("token校验失败");
         }
 
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return new BaseGenericsResponse<>("验证码错误");
+            return BaseGenericsResponse.failureBaseResp("验证码错误");
         }
 
         usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
                 DigestUtils.md5DigestAsHex(baseRequest.getPassword().getBytes())).send();
 
-        return new BaseGenericsResponse<>("重置成功");
-    }
-
-
-    /**
-     * Update role.
-     *
-     * @param token
-     * @param userId
-     * @param role
-     * @return
-     */
-    @Override
-    public BaseGenericsResponse updateRole(String token, Integer userId, Integer role) {
-        return null;
-//        if (!JwtUtils.verifyToken(token)) {
-//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-//        }
-//        int i = 1;
-//        if (i > 0) {
-//            return new BaseGenericsResponse(StatusCode.SUCCESS);
-//        }
-//        return new BaseGenericsResponse(StatusCode.FAIL);
-    }
-
-    /**
-     * Update password.
-     *
-     * @param token
-     * @param password
-     * @return
-     */
-    @Override
-    public BaseGenericsResponse updatePassword(String token, String password) {
-        return null;
-//        if (!JwtUtils.verifyToken(token)) {
-//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-//        }
-//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-//        // Encode password.
-//        String s = DigestUtils.md5Hex(password);
-//        int i = 1;
-//        if (i > 0) {
-//            return new BaseGenericsResponse(StatusCode.SUCCESS);
-//        }
-//        return new BaseGenericsResponse(StatusCode.FAIL);
-    }
-
-    /**
-     * Find back the password.
-     *
-     * @param token
-     * @param password
-     * @param code
-     * @return
-     */
-    @Override
-    public BaseGenericsResponse findPassword(String token, String password, String code) {
-        return null;
-//        if (!JwtUtils.verifyToken(token)) {
-//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-//        }
-//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-//        User user = null;
-//        // Find phone number by userId.
-//        String phone = user.getPhone();
-//        String codeBefore = redisTemplate.opsForValue().get(phone);
-//        // if the coedBefore is empty, it means the code is overdue.
-//        if (StringUtils.isEmpty(codeBefore)) {
-//            return new BaseGenericsResponse(StatusCode.CODE_IS_OVERDUE);
-//        }
-//        // Verify code whether right.
-//        if (!code.equals(codeBefore)) {
-//            return new BaseGenericsResponse(StatusCode.CODE_IS_NOT_CORRECT);
-//        }
-//        // Update password.
-//        BaseGenericsResponse baseResponse = updatePassword(token, password);
-//        // delete the code.
-//        Boolean flag = redisTemplate.delete(phone);
-//        if (Boolean.TRUE.equals(flag)) {
-//            return baseResponse;
-//        }
-//        return new BaseGenericsResponse(StatusCode.FAIL);
-    }
-
-    /**
-     * Update the wxOpenId.
-     *
-     * @param token
-     * @param wxOpenId
-     * @return
-     */
-    @Override
-    public BaseGenericsResponse updateWx(String token, String wxOpenId) {
-        return null;
-//        if (!JwtUtils.verifyToken(token)) {
-//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-//        }
-//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-//        int i = 1;
-//        if (i > 0) {
-//            return new BaseGenericsResponse(StatusCode.SUCCESS);
-//        }
-//        return new BaseGenericsResponse(StatusCode.FAIL);
-    }
-
-    /**
-     * Update the phoneNumber.
-     *
-     * @param token
-     * @param phoneNumber
-     * @param code
-     * @return
-     */
-    @Override
-    public BaseGenericsResponse updatePhone(String token, String phoneNumber, String code) {
-        return null;
-//        if (!JwtUtils.verifyToken(token)) {
-//            return new BaseGenericsResponse(StatusCode.TOKEN_IS_IN_VALID);
-//        }
-//        DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
-//        User user = null;
-//        // Find phone number by userId.
-//        String phone = user.getPhone();
-//        String codeBefore = redisTemplate.opsForValue().get(phone);
-//        // if the coedBefore is empty, it means the code is overdue.
-//        if (StringUtils.isEmpty(codeBefore)) {
-//            return new BaseGenericsResponse(StatusCode.CODE_IS_OVERDUE);
-//        }
-//        // Verify code whether right.
-//        if (!code.equals(codeBefore)) {
-//            return new BaseGenericsResponse(StatusCode.CODE_IS_NOT_CORRECT);
-//        }
-//        // Update password.
-//        user.setPhone(phoneNumber);
-//        user.setIsBindPhone(1);
-//        int i = 1;
-//        if (i > 0) {
-//            return new BaseGenericsResponse(StatusCode.SUCCESS);
-//        }
-//        return new BaseGenericsResponse(StatusCode.FAIL);
+        return BaseGenericsResponse.successBaseResp("重置成功");
     }
 
 }
