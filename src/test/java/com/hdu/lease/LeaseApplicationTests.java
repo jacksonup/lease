@@ -5,6 +5,8 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
 import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.mapper.ContractMapper;
+import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.excel.UserInfo;
 import com.hdu.lease.property.ContractProperties;
@@ -58,6 +60,9 @@ class LeaseApplicationTests {
     @Setter(onMethod_ = @Autowired)
     private RedisTemplate<String, String> redisTemplate;
 
+    @Autowired
+    private ContractMapper contractMapper;
+
     /**
      * 部署合约
      *
@@ -77,8 +82,17 @@ class LeaseApplicationTests {
 
         // 部署合约
         UserContract userContract = UserContract.deploy(web3j, credentials, provider).send();
+
         log.info("UserContract合约地址：{}", userContract.getContractAddress());
         log.info("UserContract 是否可用：{}",userContract.isValid());
+
+        // 维护合约地址
+        if (userContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(1);
+            contract.setContractAddress(userContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
 
         // admin用户
         User user = new User(
@@ -91,8 +105,43 @@ class LeaseApplicationTests {
                 new BigInteger("0")
         );
 
+        // pwd 12345
+        User jzy = new User(
+                "19052238",
+                "jzy",
+                "15906888912",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
+
+        // pwd 12345
+        User lyl = new User(
+                "19052239",
+                "lyl",
+                "18106660269",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
+
+        // pwd 12345
+        User cyb = new User(
+                "19052240",
+                "cyb",
+                "15906888912",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
         List<User> list = new ArrayList<>();
         list.add(user);
+        list.add(cyb);
+        list.add(jzy);
+        list.add(lyl);
         userContract.batchAddUser(list).sendAsync().get();
     }
 
@@ -107,25 +156,13 @@ class LeaseApplicationTests {
         StaticGasProvider provider = new StaticGasProvider(
                 contractProperties.getGasPrice(),
                 contractProperties.getGasLimit());
-        System.out.println(contractProperties.getAddress());
+
+        // 取合约地址
+        Contract contract = contractMapper.selectById(1);
+
         // 加载合约
-        UserContract usercontract = UserContract.load(contractProperties.getAddress(), web3j, credentials, provider);
+        UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
         log.info("UserContract 是否可用：{}",usercontract.isValid());
-
-        // pwd 12345
-        User user = new User(
-                "19052240",
-                "cyb",
-                "15906888912",
-                "827ccb0eea8a706c4c34a16891f84e7b",
-                new BigInteger("1"),
-                new BigInteger("0"),
-                new BigInteger("0")
-        );
-
-        List<User> list = new ArrayList<>();
-        list.add(user);
-        usercontract.batchAddUser(list).sendAsync().get();
 
         User cyb = usercontract.getUserInfo("19052240").send();
         log.info("User:{}",cyb);

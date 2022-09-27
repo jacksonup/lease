@@ -17,11 +17,6 @@ import java.math.BigInteger;
 public class ContractProperties {
 
     /**
-     * 部署合约地址
-     */
-    private String address;
-
-    /**
      * 监听本地ganache地址
      */
     private String httpService;

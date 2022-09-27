@@ -3,9 +3,11 @@ package com.hdu.lease.service;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.exception.BaseBizException;
+import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.mapstruct.UserInfoConvert;
 import com.hdu.lease.pojo.dto.TokenDTO;
 import com.hdu.lease.pojo.dto.UserInfoDTO;
+import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.request.BaseRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
@@ -45,6 +47,9 @@ public class UserServiceImpl implements UserService {
     @Setter(onMethod_ = @Autowired)
     private UserInfoConvert userInfoConvert;
 
+    @Setter(onMethod_ = @Autowired)
+    private ContractMapper contractMapper;
+
     private UserContract usercontract;
 
     /**
@@ -62,8 +67,11 @@ public class UserServiceImpl implements UserService {
                 contractProperties.getGasPrice(),
                 contractProperties.getGasLimit());
 
+        // 取合约地址
+        Contract contract = contractMapper.selectById(1);
+
         // 加载合约
-        usercontract = UserContract.load(contractProperties.getAddress(), web3j, credentials, provider);
+        usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
     }
 
     /**
