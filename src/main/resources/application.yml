@@ -2,6 +2,12 @@ server:
   port: 8090
 
 spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/lease
+    username: root
+    password: cyb1255210
+
   redis:
     host: 127.0.0.1
     port: 6379
@@ -13,8 +19,8 @@ tencent:
     appId: 1400671597
 
 contract:
-  address: 3d7a755b44ba7fd096f4321b7b75d8d62b2f5c93
-  credentials: cea0f99be3108e8ba3616d3e4f2a6dd1414c2bb7141eaef9e846c04c3af7419e
+  address: '0x38cc4f06ab4fcac58c65bff3afd09a1c68de1275'
+  credentials: 77b321a1a65f14c7e4551969b3c37ea30c9542cc10eb3e7c78b14519323dc7f6
   http-service: HTTP://127.0.0.1:8545
   gas-price: 20000000000
   gas-limit: 6721975

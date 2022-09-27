@@ -53,21 +53,21 @@ public class User extends DynamicStruct {
     private BigInteger status;
 
 
-    public User(User user) {
-        super(new org.web3j.abi.datatypes.Utf8String(user.getAccount()),
-                new org.web3j.abi.datatypes.Utf8String(user.getUsername()),
-                new org.web3j.abi.datatypes.Utf8String(user.getPhone()),
-                new org.web3j.abi.datatypes.Utf8String(user.getPassword()),
-                new org.web3j.abi.datatypes.generated.Uint256(user.getIsBindPhone()),
-                new org.web3j.abi.datatypes.generated.Uint256(user.getRole()),
-                new org.web3j.abi.datatypes.generated.Uint256(user.getStatus()));
-        this.account = user.getAccount();
-        this.username = user.getUsername();
-        this.phone = user.getPhone();
-        this.password = user.getPassword();
-        this.isBindPhone = user.getIsBindPhone();
-        this.role = user.getRole();
-        this.status = user.getStatus();
+    public User(String account, String name, String phone, String password, BigInteger isBindPhone, BigInteger role, BigInteger status) {
+        super(new org.web3j.abi.datatypes.Utf8String(account),
+                new org.web3j.abi.datatypes.Utf8String(name),
+                new org.web3j.abi.datatypes.Utf8String(phone),
+                new org.web3j.abi.datatypes.Utf8String(password),
+                new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),
+                new org.web3j.abi.datatypes.generated.Uint256(role),
+                new org.web3j.abi.datatypes.generated.Uint256(status));
+        this.account = account;
+        this.username = name;
+        this.phone = phone;
+        this.password = password;
+        this.isBindPhone = isBindPhone;
+        this.role = role;
+        this.status = status;
     }
 
     public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 isBindPhone, Uint256 role, Uint256 status) {
@@ -82,5 +82,6 @@ public class User extends DynamicStruct {
     }
 
     public User() {
+
     }
 }

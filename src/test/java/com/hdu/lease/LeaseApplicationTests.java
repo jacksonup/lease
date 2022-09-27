@@ -79,6 +79,21 @@ class LeaseApplicationTests {
         UserContract userContract = UserContract.deploy(web3j, credentials, provider).send();
         log.info("UserContract合约地址：{}", userContract.getContractAddress());
         log.info("UserContract 是否可用：{}",userContract.isValid());
+
+        // admin用户
+        User user = new User(
+                "admin",
+                "admin",
+                "15906888912",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("2"),
+                new BigInteger("0")
+        );
+
+        List<User> list = new ArrayList<>();
+        list.add(user);
+        userContract.batchAddUser(list).sendAsync().get();
     }
 
     @Test
@@ -92,36 +107,30 @@ class LeaseApplicationTests {
         StaticGasProvider provider = new StaticGasProvider(
                 contractProperties.getGasPrice(),
                 contractProperties.getGasLimit());
-
+        System.out.println(contractProperties.getAddress());
         // 加载合约
-        UserContract usercontract = UserContract.load("0x"+contractProperties.getAddress(), web3j, credentials, provider);
+        UserContract usercontract = UserContract.load(contractProperties.getAddress(), web3j, credentials, provider);
         log.info("UserContract 是否可用：{}",usercontract.isValid());
-//        BigInteger userId,infoId,role;
-//        String account,name,salt,phone,password;
-//        userId = new BigInteger("0");
-//        infoId = new BigInteger("0");
-//        role = new BigInteger("0");
-//        account = "19052240";
-//        name = "陈宇彬";
-//        salt = "salt";
-//        phone = "15906888912";
-//        password = "827ccb0eea8a706c4c34a16891f84e7b";
-//        TransactionReceipt receipt = usercontract.setUser(account,name,salt,phone,password,role).sendAsync().get();
-//        User user = new User("19052241","陈宇彬","15906888911","827ccb0eea8a706c4c34a16891f84e7b",new BigInteger("1"),new BigInteger("0"),new BigInteger("0"));
-////        user.setAccount("19052241");
-////        user.setPhone("15906888911");
-////        user.setUsername("陈宇彬");
-////        user.setIsBindPhone(new BigInteger("1"));
-////        user.setPassword("827ccb0eea8a706c4c34a16891f84e7b");
-////        user.setRole(new BigInteger("0"));
-////        user.setStatus(new BigInteger("0"));
-//        List<User> list = new ArrayList<>();
-//        list.add(user);
-//        usercontract.batchAddUser(list).sendAsync().get();
 
-//        User user1 = usercontract.getUserInfo("19052241").send();
-////        Tuple7<String,String,String,String,BigInteger,BigInteger,BigInteger> user1 = usercontract.users("19052241").send();
-//        log.info("User:{}",user1);
+        // pwd 12345
+        User user = new User(
+                "19052240",
+                "cyb",
+                "15906888912",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
+
+        List<User> list = new ArrayList<>();
+        list.add(user);
+        usercontract.batchAddUser(list).sendAsync().get();
+
+        User cyb = usercontract.getUserInfo("19052240").send();
+        log.info("User:{}",cyb);
+        User admin = usercontract.getUserInfo("admin").send();
+        log.info("User:{}",admin);
     }
 
 
@@ -252,14 +261,6 @@ class LeaseApplicationTests {
 
     @Test
     void testJwt() {
-
-//        User user = null;
-//        // create token
-//        TokenDTO tokenDTO = new TokenDTO();
-//        tokenDTO.setRole(user.getRole());
-//        tokenDTO.setUuid(UuidUtils.createUuid());
-//        tokenDTO.setUserId(user.getId());
-//        String token = JwtUtils.createToken(tokenDTO);
         String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjo0ODAsImFjY291bnQiOiIxOTA1MjI0MSJ9.cK4MU8Gmvfmfwsdc87pNlhX55xmz-tnibzhV8xjqY4s";
         System.out.println(JwtUtils.getTokenInfo(token).getClaim("account").asString());
         System.out.println(JwtUtils.getTokenInfo(token).getClaim("role").asInt());
