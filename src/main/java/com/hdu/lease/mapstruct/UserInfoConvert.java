@@ -1,7 +1,7 @@
 package com.hdu.lease.mapstruct;
 
+import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.pojo.dto.UserInfoDTO;
-import com.hdu.lease.pojo.entity.User;
 import org.mapstruct.Mapper;
 
 /**
@@ -11,6 +11,6 @@ import org.mapstruct.Mapper;
  * @date 2022/9/25
  */
 @Mapper(componentModel = "spring")
-public interface UserInfoConvert extends BaseObjectConvert<User, UserInfoDTO>{
+public interface UserInfoConvert extends BaseObjectConvert<UserContract.User, UserInfoDTO>{
 
 }

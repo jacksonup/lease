@@ -7,7 +7,6 @@ import com.alibaba.excel.util.ListUtils;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.entity.Contract;
-import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.excel.UserInfo;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.service.UserService;
@@ -26,7 +25,6 @@ import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -95,7 +93,7 @@ class LeaseApplicationTests {
         }
 
         // admin用户
-        User user = new User(
+        UserContract.User user = new UserContract.User(
                 "admin",
                 "admin",
                 "15906888912",
@@ -106,7 +104,7 @@ class LeaseApplicationTests {
         );
 
         // pwd 12345
-        User jzy = new User(
+        UserContract.User jzy = new UserContract.User(
                 "19052238",
                 "jzy",
                 "15906888912",
@@ -117,7 +115,7 @@ class LeaseApplicationTests {
         );
 
         // pwd 12345
-        User lyl = new User(
+        UserContract.User lyl = new UserContract.User(
                 "19052239",
                 "lyl",
                 "18106660269",
@@ -128,7 +126,7 @@ class LeaseApplicationTests {
         );
 
         // pwd 12345
-        User cyb = new User(
+        UserContract.User cyb = new UserContract.User(
                 "19052240",
                 "cyb",
                 "15906888912",
@@ -137,7 +135,7 @@ class LeaseApplicationTests {
                 new BigInteger("0"),
                 new BigInteger("0")
         );
-        List<User> list = new ArrayList<>();
+        List<UserContract.User> list = new ArrayList<>();
         list.add(user);
         list.add(cyb);
         list.add(jzy);
@@ -163,7 +161,7 @@ class LeaseApplicationTests {
         // 加载合约
         UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
         log.info("UserContract 是否可用：{}",usercontract.isValid());
-        User lyl = new User(
+        UserContract.User lyl = new UserContract.User(
                 "19052239",
                 "lyl",
                 "18106660269",
@@ -172,13 +170,13 @@ class LeaseApplicationTests {
                 new BigInteger("0"),
                 new BigInteger("0")
         );
-        List<User> list = new ArrayList<>();
+        List<UserContract.User> list = new ArrayList<>();
         list.add(lyl);
         usercontract.batchAddUser(list).sendAsync().get();
 
-        User cyb = usercontract.getUserInfo("19052239").send();
+        UserContract.User cyb = usercontract.getUserInfo("19052239").send();
         log.info("User:{}",cyb);
-        User admin = usercontract.getUserInfo("admin").send();
+        UserContract.User admin = usercontract.getUserInfo("admin").send();
         log.info("User:{}",admin);
     }
 
@@ -201,7 +199,7 @@ class LeaseApplicationTests {
        UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
        log.info("UserContract 是否可用：{}",usercontract.isValid());
 
-       User user = new User(
+        UserContract.User user = new UserContract.User(
                "19052239",
                "lyl",
                "18106660269",
@@ -211,7 +209,7 @@ class LeaseApplicationTests {
                new BigInteger("0")
        );
 //       usercontract.modifyUserInfoById(user).send();
-        User lyl = usercontract.getUserInfo("19052239").send();
+        UserContract.User lyl = usercontract.getUserInfo("19052239").send();
         log.info("User:{}",lyl);
 //       List<User> userList = usercontract.getUserList(new BigInteger("0")).send();
 
@@ -236,7 +234,7 @@ class LeaseApplicationTests {
         UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
         log.info("UserContract 是否可用：{}",usercontract.isValid());
         // pwd 12345
-        User lyl = new User(
+        UserContract.User lyl = new UserContract.User(
                 "19052239",
                 "lyl",
                 "18106660269",
@@ -245,11 +243,11 @@ class LeaseApplicationTests {
                 new BigInteger("0"),
                 new BigInteger("0")
         );
-        List<User> list = new ArrayList<>();
+        List<UserContract.User> list = new ArrayList<>();
         list.add(lyl);
         usercontract.batchAddUser(list).sendAsync().get();
 
-       List<User> userList = usercontract.getUserList(new BigInteger("0")).sendAsync().get();
+       List<UserContract.User> userList = usercontract.getUserList(new BigInteger("0")).sendAsync().get();
 
     }
 
@@ -431,7 +429,7 @@ class LeaseApplicationTests {
                 log.info("{}条数据，开始存储数据库！", cachedDataList.size());
                 for (UserInfo userInfo : cachedDataList) {
                     log.info(userInfo.toString());
-                    User byAccount = null;
+                    UserContract.User byAccount = null;
                     if (byAccount == null) {
 //                        User user = new User();
 //                        user.setUsername(userInfo.getUsername());

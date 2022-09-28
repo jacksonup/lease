@@ -7,7 +7,6 @@ import com.hdu.lease.mapstruct.UserInfoConvert;
 import com.hdu.lease.pojo.dto.TokenDTO;
 import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.entity.Contract;
-import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.request.BaseRequest;
 import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
@@ -81,7 +80,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws Exception {
         // 获取用户信息
-        User user = usercontract.getUserInfo(account).send();
+        UserContract.User user = usercontract.getUserInfo(account).send();
         log.info("用户信息:{}", user);
 
         // 校验用户存在性
@@ -125,7 +124,7 @@ public class UserServiceImpl implements UserService {
         DecodedJWT tokenInfo = JwtUtils.getTokenInfo(token);
         String account = tokenInfo.getClaim("account").asString();
 
-        User user = usercontract.getUserInfo(account).send();
+        UserContract.User user = usercontract.getUserInfo(account).send();
         // 校验用户存在性
         if (user.getAccount().isEmpty()) {
             return BaseGenericsResponse.failureBaseResp("学号不存在");

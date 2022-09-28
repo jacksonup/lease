@@ -1,6 +1,5 @@
 package com.hdu.lease.contract;
 
-import com.hdu.lease.pojo.entity.User;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import java.math.BigInteger;
@@ -9,6 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -299,43 +302,50 @@ public class UserContract extends Contract {
         return deployRemoteCall(UserContract.class, web3j, transactionManager, gasPrice, gasLimit, BINARY, "");
     }
 
-//    public static class User extends DynamicStruct {
-//        public String account;
-//
-//        public String name;
-//
-//        public String phone;
-//
-//        public String password;
-//
-//        public BigInteger isBindPhone;
-//
-//        public BigInteger role;
-//
-//        public BigInteger status;
-//
-//        public User(String account, String name, String phone, String password, BigInteger isBindPhone, BigInteger role, BigInteger status) {
-//            super(new org.web3j.abi.datatypes.Utf8String(account),new org.web3j.abi.datatypes.Utf8String(name),new org.web3j.abi.datatypes.Utf8String(phone),new org.web3j.abi.datatypes.Utf8String(password),new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),new org.web3j.abi.datatypes.generated.Uint256(role),new org.web3j.abi.datatypes.generated.Uint256(status));
-//            this.account = account;
-//            this.name = name;
-//            this.phone = phone;
-//            this.password = password;
-//            this.isBindPhone = isBindPhone;
-//            this.role = role;
-//            this.status = status;
-//        }
-//
-//        public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 isBindPhone, Uint256 role, Uint256 status) {
-//            super(account,name,phone,password,isBindPhone,role,status);
-//            this.account = account.getValue();
-//            this.name = name.getValue();
-//            this.phone = phone.getValue();
-//            this.password = password.getValue();
-//            this.isBindPhone = isBindPhone.getValue();
-//            this.role = role.getValue();
-//            this.status = status.getValue();
-//        }
-//    }
+    @Getter
+    @Setter
+    @ToString
+    public static class User extends DynamicStruct {
+        public String account;
+
+        public String name;
+
+        public String phone;
+
+        public String password;
+
+        public BigInteger isBindPhone;
+
+        public BigInteger role;
+
+        public BigInteger status;
+
+        public User(String account, String name, String phone, String password, BigInteger isBindPhone, BigInteger role, BigInteger status) {
+            super(new org.web3j.abi.datatypes.Utf8String(account),new org.web3j.abi.datatypes.Utf8String(name),new org.web3j.abi.datatypes.Utf8String(phone),new org.web3j.abi.datatypes.Utf8String(password),new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),new org.web3j.abi.datatypes.generated.Uint256(role),new org.web3j.abi.datatypes.generated.Uint256(status));
+            this.account = account;
+            this.name = name;
+            this.phone = phone;
+            this.password = password;
+            this.isBindPhone = isBindPhone;
+            this.role = role;
+            this.status = status;
+        }
+
+        public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 isBindPhone, Uint256 role, Uint256 status) {
+            super(account,name,phone,password,isBindPhone,role,status);
+            this.account = account.getValue();
+            this.name = name.getValue();
+            this.phone = phone.getValue();
+            this.password = password.getValue();
+            this.isBindPhone = isBindPhone.getValue();
+            this.role = role.getValue();
+            this.status = status.getValue();
+        }
+
+        public User(){
+
+        }
+    }
 
     public static class LogEventResponse extends BaseEventResponse {
         public String message;
