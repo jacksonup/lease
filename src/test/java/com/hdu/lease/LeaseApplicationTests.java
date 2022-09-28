@@ -434,7 +434,7 @@ class LeaseApplicationTests {
                     User byAccount = null;
                     if (byAccount == null) {
                         User user = new User();
-                        user.setUsername(userInfo.getUsername());
+//                        user.setUsername(userInfo.getUsername());
                         user.setAccount(userInfo.getAccount());
                         user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
                         user.setPhone(userInfo.getPhone());
