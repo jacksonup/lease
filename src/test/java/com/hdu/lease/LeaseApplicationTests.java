@@ -163,13 +163,82 @@ class LeaseApplicationTests {
         // 加载合约
         UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
         log.info("UserContract 是否可用：{}",usercontract.isValid());
+        User lyl = new User(
+                "19052239",
+                "lyl",
+                "18106660269",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
+        List<User> list = new ArrayList<>();
+        list.add(lyl);
+        usercontract.batchAddUser(list).sendAsync().get();
 
-        User cyb = usercontract.getUserInfo("19052240").send();
+        User cyb = usercontract.getUserInfo("19052239").send();
         log.info("User:{}",cyb);
         User admin = usercontract.getUserInfo("admin").send();
         log.info("User:{}",admin);
     }
 
+    @Test
+   void  modifyUserInfoById() throws Exception{
+       // 监听本地链
+       Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
+
+       // 生成资格凭证
+       Credentials credentials = Credentials.create(contractProperties.getCredentials());
+
+       StaticGasProvider provider = new StaticGasProvider(
+               contractProperties.getGasPrice(),
+               contractProperties.getGasLimit());
+
+       // 取合约地址
+       Contract contract = contractMapper.selectById(1);
+
+       // 加载合约
+       UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
+       log.info("UserContract 是否可用：{}",usercontract.isValid());
+
+       User user = new User(
+               "19052239",
+               "lyl",
+               "18106660269",
+               "12345",
+               new BigInteger("1"),
+               new BigInteger("0"),
+               new BigInteger("0")
+       );
+//       usercontract.modifyUserInfoById(user).send();
+        User lyl = usercontract.getUserInfo("19052239").send();
+        log.info("User:{}",lyl);
+//       List<User> userList = usercontract.getUserList(new BigInteger("0")).send();
+
+   }
+
+    @Test
+    void  getUserList() throws Exception{
+        // 监听本地链
+        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
+
+        // 生成资格凭证
+        Credentials credentials = Credentials.create(contractProperties.getCredentials());
+
+        StaticGasProvider provider = new StaticGasProvider(
+                contractProperties.getGasPrice(),
+                contractProperties.getGasLimit());
+
+        // 取合约地址
+        Contract contract = contractMapper.selectById(1);
+
+        // 加载合约
+        UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
+        log.info("UserContract 是否可用：{}",usercontract.isValid());
+
+       List<User> userList = usercontract.getUserList(new BigInteger("0")).sendAsync().get();
+
+    }
 
     @Test
     void contextLoads() {
