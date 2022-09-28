@@ -1,9 +1,11 @@
 package com.hdu.lease.pojo.entity;
 
+import com.hdu.lease.contract.UserContract;
 import lombok.*;
 import org.web3j.abi.datatypes.DynamicStruct;
 import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.core.methods.response.BaseEventResponse;
 
 import java.math.BigInteger;
 
@@ -14,6 +16,7 @@ import java.math.BigInteger;
  */
 @Getter
 @Setter
+@ToString
 public class User extends DynamicStruct {
     public String account;
 
@@ -50,10 +53,4 @@ public class User extends DynamicStruct {
         this.role = role.getValue();
         this.status = status.getValue();
     }
-
-    public User() {
-
-    }
-
-
 }

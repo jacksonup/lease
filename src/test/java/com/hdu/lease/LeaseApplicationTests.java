@@ -433,11 +433,11 @@ class LeaseApplicationTests {
                     log.info(userInfo.toString());
                     User byAccount = null;
                     if (byAccount == null) {
-                        User user = new User();
+//                        User user = new User();
 //                        user.setUsername(userInfo.getUsername());
-                        user.setAccount(userInfo.getAccount());
-                        user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
-                        user.setPhone(userInfo.getPhone());
+//                        user.setAccount(userInfo.getAccount());
+//                        user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
+//                        user.setPhone(userInfo.getPhone());
 //                        user.setIsBindPhone(StringUtils.isEmpty(userInfo.getPhone()) ? 0 : 1);
 //                        User save = userRepository.save(user);
                     }
