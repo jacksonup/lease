@@ -48,19 +48,13 @@ public class User extends DynamicStruct {
     private BigInteger role;
 
     /**
-     * 是否删除
+     * 是否删除 0表示未删除
      */
     private BigInteger status;
 
 
     public User(String account, String name, String phone, String password, BigInteger isBindPhone, BigInteger role, BigInteger status) {
-        super(new org.web3j.abi.datatypes.Utf8String(account),
-                new org.web3j.abi.datatypes.Utf8String(name),
-                new org.web3j.abi.datatypes.Utf8String(phone),
-                new org.web3j.abi.datatypes.Utf8String(password),
-                new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),
-                new org.web3j.abi.datatypes.generated.Uint256(role),
-                new org.web3j.abi.datatypes.generated.Uint256(status));
+        super(new org.web3j.abi.datatypes.Utf8String(account),new org.web3j.abi.datatypes.Utf8String(name),new org.web3j.abi.datatypes.Utf8String(phone),new org.web3j.abi.datatypes.Utf8String(password),new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),new org.web3j.abi.datatypes.generated.Uint256(role),new org.web3j.abi.datatypes.generated.Uint256(status));
         this.account = account;
         this.username = name;
         this.phone = phone;
@@ -80,6 +74,7 @@ public class User extends DynamicStruct {
         this.role = role.getValue();
         this.status = status.getValue();
     }
+
 
     public User() {
 

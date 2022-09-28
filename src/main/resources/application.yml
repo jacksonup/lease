@@ -20,7 +20,7 @@ tencent:
 
 contract:
   address: '0x42b0039dbad5fdea862898e7d89c6babebf92415'
-  credentials: 4c8dc329454f99bd3f4b2bc01c22edf8d2387df96eb7119c0cd3fa7eeaa03bfe
+  credentials: 070a094fa402639e1b5576b8a55724aa6b15cde0b3a633588217ae20906af6ac
   http-service: HTTP://127.0.0.1:8545
   gas-price: 20000000000
   gas-limit: 6721975

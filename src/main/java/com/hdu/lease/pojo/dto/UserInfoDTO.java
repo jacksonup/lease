@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigInteger;
+
 /**
  * 用户信息DTO
  *
@@ -28,4 +30,9 @@ public class UserInfoDTO {
      * 手机号
      */
     private String phone;
+
+    /**
+     * 角色
+     */
+    private BigInteger role;
 }

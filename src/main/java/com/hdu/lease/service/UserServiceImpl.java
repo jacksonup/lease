@@ -2,7 +2,6 @@ package com.hdu.lease.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hdu.lease.contract.UserContract;
-import com.hdu.lease.exception.BaseBizException;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.mapstruct.UserInfoConvert;
 import com.hdu.lease.pojo.dto.TokenDTO;
@@ -10,6 +9,7 @@ import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.entity.User;
 import com.hdu.lease.pojo.request.BaseRequest;
+import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.property.ContractProperties;
@@ -27,6 +27,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -193,6 +194,44 @@ public class UserServiceImpl implements UserService {
                 DigestUtils.md5DigestAsHex(baseRequest.getPassword().getBytes())).send();
 
         return BaseGenericsResponse.successBaseResp("重置成功");
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest) {
+        // 判断角色
+        if (modifyUserInfoRequest.getRole().intValue() != 2) {
+            return BaseGenericsResponse.failureBaseResp("权限不足");
+        }
+
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> oneInfo(BaseRequest baseRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(BaseRequest baseRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<UserInfoDTO> getRoleOnesUserList(BaseRequest baseRequest) {
+        return null;
     }
 
 }

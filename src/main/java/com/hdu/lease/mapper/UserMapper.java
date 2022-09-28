@@ -1,4 +1,4 @@
-package com.hdu.lease;
+package com.hdu.lease.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hdu.lease.pojo.entity.User;

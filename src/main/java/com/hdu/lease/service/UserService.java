@@ -2,8 +2,11 @@ package com.hdu.lease.service;
 
 import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.request.BaseRequest;
+import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+
+import java.util.List;
 
 /**
  * @author Jackson
@@ -52,4 +55,36 @@ public interface UserService {
      * @return
      */
     BaseGenericsResponse<String> modifyPassword(BaseRequest baseRequest) throws Exception;
+
+    /**
+     * 更改用户信息
+     *
+     * @param baseRequest
+     * @return
+     */
+    BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest);
+
+    /**
+     * 获取指定用户信息
+     *
+     * @param baseRequest
+     * @return
+     */
+    BaseGenericsResponse<String> oneInfo(BaseRequest baseRequest);
+
+    /**
+     * 获取所有用户
+     *
+     * @param baseRequest
+     * @return
+     */
+    BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(BaseRequest baseRequest);
+
+    /**
+     *
+     *
+     * @param baseRequest
+     * @return
+     */
+    BaseGenericsResponse<UserInfoDTO> getRoleOnesUserList(BaseRequest baseRequest);
 }
