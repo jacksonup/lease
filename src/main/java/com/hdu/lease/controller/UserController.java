@@ -2,6 +2,7 @@ package com.hdu.lease.controller;
 
 import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.request.BaseRequest;
+import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.service.UserService;
@@ -9,6 +10,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -87,5 +89,64 @@ public class UserController {
     public BaseGenericsResponse<String> modifyPassword(BaseRequest baseRequest) throws Exception {
         return userService.modifyPassword(baseRequest);
     }
+
+    /**
+     * 更改用户信息
+     *
+     * @return
+     */
+    @PostMapping("/modifyUserInfo")
+    @ResponseBody
+    public BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest) {
+        return userService.modifyUserInfoById(modifyUserInfoRequest);
+    }
+
+    /**
+     * 获取指定用户信息
+     *
+     * @param baseRequest
+     * @return
+     */
+    @GetMapping("/oneInfo")
+    @ResponseBody
+    public BaseGenericsResponse<String> oneInfo(BaseRequest baseRequest) {
+        return userService.oneInfo(baseRequest);
+    }
+
+    /**
+     * 获取所有用户
+     *
+     * @param baseRequest
+     * @return
+     */
+    @GetMapping("/getAllUserList")
+    @ResponseBody
+    public BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(BaseRequest baseRequest) {
+        return userService.getAllUserList(baseRequest);
+    }
+
+    /**
+     * 获取角色1 用户列表
+     *
+     * @param baseRequest
+     * @return
+     */
+    @GetMapping("/getRoleOnesUserList")
+    @ResponseBody
+    public BaseGenericsResponse<UserInfoDTO> getRoleOnesUserList(BaseRequest baseRequest) {
+        return userService.getRoleOnesUserList(baseRequest);
+    }
+
+    /**
+     * 导入用户
+     *
+     * @return
+     */
+    @PostMapping("/importUser")
+    @ResponseBody
+    public BaseGenericsResponse<String> importUser() {
+        return null;
+    }
+
 
 }

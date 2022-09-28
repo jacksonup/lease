@@ -14,55 +14,25 @@ import java.math.BigInteger;
  */
 @Getter
 @Setter
-@ToString
 public class User extends DynamicStruct {
+    public String account;
 
-    /**
-     * 账号
-     */
-    private String account;
+    public String name;
 
-    /**
-     * 密码
-     */
-    private String password;
+    public String phone;
 
-    /**
-     * 用户名
-     */
-    private String username;
+    public String password;
 
-    /**
-     * 手机号
-     */
-    private String phone;
+    public BigInteger isBindPhone;
 
-    /**
-     * 是否绑定手机号1表示绑定、0表示未绑定
-     */
-    private BigInteger isBindPhone;
+    public BigInteger role;
 
-    /**
-     * 角色
-     */
-    private BigInteger role;
-
-    /**
-     * 是否删除
-     */
-    private BigInteger status;
-
+    public BigInteger status;
 
     public User(String account, String name, String phone, String password, BigInteger isBindPhone, BigInteger role, BigInteger status) {
-        super(new org.web3j.abi.datatypes.Utf8String(account),
-                new org.web3j.abi.datatypes.Utf8String(name),
-                new org.web3j.abi.datatypes.Utf8String(phone),
-                new org.web3j.abi.datatypes.Utf8String(password),
-                new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),
-                new org.web3j.abi.datatypes.generated.Uint256(role),
-                new org.web3j.abi.datatypes.generated.Uint256(status));
+        super(new org.web3j.abi.datatypes.Utf8String(account),new org.web3j.abi.datatypes.Utf8String(name),new org.web3j.abi.datatypes.Utf8String(phone),new org.web3j.abi.datatypes.Utf8String(password),new org.web3j.abi.datatypes.generated.Uint256(isBindPhone),new org.web3j.abi.datatypes.generated.Uint256(role),new org.web3j.abi.datatypes.generated.Uint256(status));
         this.account = account;
-        this.username = name;
+        this.name = name;
         this.phone = phone;
         this.password = password;
         this.isBindPhone = isBindPhone;
@@ -73,7 +43,7 @@ public class User extends DynamicStruct {
     public User(Utf8String account, Utf8String name, Utf8String phone, Utf8String password, Uint256 isBindPhone, Uint256 role, Uint256 status) {
         super(account,name,phone,password,isBindPhone,role,status);
         this.account = account.getValue();
-        this.username = name.getValue();
+        this.name = name.getValue();
         this.phone = phone.getValue();
         this.password = password.getValue();
         this.isBindPhone = isBindPhone.getValue();
@@ -84,4 +54,6 @@ public class User extends DynamicStruct {
     public User() {
 
     }
+
+
 }

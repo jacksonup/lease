@@ -235,6 +235,19 @@ class LeaseApplicationTests {
         // 加载合约
         UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
         log.info("UserContract 是否可用：{}",usercontract.isValid());
+        // pwd 12345
+        User lyl = new User(
+                "19052239",
+                "lyl",
+                "18106660269",
+                "827ccb0eea8a706c4c34a16891f84e7b",
+                new BigInteger("1"),
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
+        List<User> list = new ArrayList<>();
+        list.add(lyl);
+        usercontract.batchAddUser(list).sendAsync().get();
 
        List<User> userList = usercontract.getUserList(new BigInteger("0")).sendAsync().get();
 
@@ -421,7 +434,7 @@ class LeaseApplicationTests {
                     User byAccount = null;
                     if (byAccount == null) {
                         User user = new User();
-                        user.setUsername(userInfo.getUsername());
+//                        user.setUsername(userInfo.getUsername());
                         user.setAccount(userInfo.getAccount());
                         user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
                         user.setPhone(userInfo.getPhone());
@@ -441,6 +454,7 @@ class LeaseApplicationTests {
         System.out.println(redisTemplate.opsForValue().get("1"));
         redisTemplate.opsForValue().getAndSet("1", "2");
         System.out.println(redisTemplate.opsForValue().get("15906888912"));
+//        List<>
     }
 
 }
