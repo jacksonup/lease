@@ -3,7 +3,6 @@ package com.hdu.lease.service;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
-import com.hdu.lease.mapstruct.UserInfoConvert;
 import com.hdu.lease.pojo.dto.TokenDTO;
 import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.entity.Contract;
@@ -43,9 +42,6 @@ public class UserServiceImpl implements UserService {
 
     @Setter(onMethod_ = @Autowired)
     private ContractProperties contractProperties;
-
-    @Setter(onMethod_ = @Autowired)
-    private UserInfoConvert userInfoConvert;
 
     @Setter(onMethod_ = @Autowired)
     private ContractMapper contractMapper;
@@ -130,9 +126,13 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp("学号不存在");
         }
 
-        return BaseGenericsResponse.successBaseResp(
-                userInfoConvert.one(user)
-        );
+        UserInfoDTO userInfoDTO = new UserInfoDTO();
+        userInfoDTO.setUsername(user.getName());
+        userInfoDTO.setAccount(user.getAccount());
+        userInfoDTO.setPhone(user.getPhone());
+        userInfoDTO.setRole(user.getRole());
+
+        return BaseGenericsResponse.successBaseResp(userInfoDTO);
     }
 
     /**

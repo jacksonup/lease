@@ -9,9 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -341,15 +339,10 @@ public class UserContract extends Contract {
             this.role = role.getValue();
             this.status = status.getValue();
         }
-
-        public User(){
-
-        }
     }
 
     public static class LogEventResponse extends BaseEventResponse {
         public String message;
-
         public BigInteger value;
     }
 
