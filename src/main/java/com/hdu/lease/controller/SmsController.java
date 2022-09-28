@@ -29,7 +29,7 @@ public class SmsController {
      * @param baseRequest
      * @return
      */
-    @PostMapping("/restPassword")
+    @PostMapping("/resetPassword")
     @ResponseBody
     public BaseGenericsResponse<String> restPassword(BaseRequest baseRequest) {
         String code = RandomNumberUtils.createRandomNumber(4);

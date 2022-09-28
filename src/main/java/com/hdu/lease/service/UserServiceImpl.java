@@ -151,7 +151,7 @@ public class UserServiceImpl implements UserService {
 
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return BaseGenericsResponse.successBaseResp("验证码错误");
+            return BaseGenericsResponse.failureBaseResp("验证码错误");
         }
 
         usercontract.modifyPhoneByAccount(account, baseRequest.getPhone()).send();
