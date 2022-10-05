@@ -2,6 +2,7 @@ package com.hdu.lease.controller;
 
 import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.request.BaseRequest;
+import com.hdu.lease.pojo.request.GetAllUserListRequest;
 import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
@@ -97,7 +98,7 @@ public class UserController {
      */
     @PostMapping("/modifyUserInfo")
     @ResponseBody
-    public BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest) {
+    public BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest) throws Exception {
         return userService.modifyUserInfoById(modifyUserInfoRequest);
     }
 
@@ -109,20 +110,20 @@ public class UserController {
      */
     @GetMapping("/oneInfo")
     @ResponseBody
-    public BaseGenericsResponse<String> oneInfo(BaseRequest baseRequest) {
+    public BaseGenericsResponse<UserInfoDTO> oneInfo(BaseRequest baseRequest) throws Exception {
         return userService.oneInfo(baseRequest);
     }
 
     /**
      * 获取所有用户
      *
-     * @param baseRequest
+     * @param getAllUserListRequest
      * @return
      */
     @GetMapping("/getAllUserList")
     @ResponseBody
-    public BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(BaseRequest baseRequest) {
-        return userService.getAllUserList(baseRequest);
+    public BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws ExecutionException, InterruptedException {
+        return userService.getAllUserList(getAllUserListRequest);
     }
 
     /**
@@ -133,7 +134,7 @@ public class UserController {
      */
     @GetMapping("/getRoleOnesUserList")
     @ResponseBody
-    public BaseGenericsResponse<UserInfoDTO> getRoleOnesUserList(BaseRequest baseRequest) {
+    public BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(BaseRequest baseRequest) throws Exception {
         return userService.getRoleOnesUserList(baseRequest);
     }
 
@@ -148,5 +149,13 @@ public class UserController {
         return null;
     }
 
-
+    /**
+     * 登出
+     *
+     * @return
+     */
+    @PostMapping("/logout")
+    public BaseGenericsResponse<String> logout(BaseRequest baseRequest) {
+        return userService.logout(baseRequest);
+    }
 }

@@ -28,5 +28,7 @@ public class BaseResponse {
 
     public static final String SUCCESS_STATUS = "200";
 
-    public static final String FAIL_STATUS = "1001";
+    public static final String DISAPPEAR_STATUS = "404";
+    public static final String FAIL_STATUS = "500";
+
 }

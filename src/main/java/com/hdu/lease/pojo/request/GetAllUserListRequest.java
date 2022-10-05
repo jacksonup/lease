@@ -2,17 +2,17 @@ package com.hdu.lease.pojo.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigInteger;
 
 /**
  * @author chenyb46701
- * @date 2022/9/28
+ * @date 2022/10/2
  */
-@Setter
 @Getter
-public class ModifyUserInfoRequest extends BaseRequest{
-    private BigInteger role;
-
-    private String name;
+@Setter
+@ToString
+public class GetAllUserListRequest extends BaseRequest{
+    private BigInteger from;
 }

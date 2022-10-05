@@ -1,6 +1,7 @@
 package com.hdu.lease.pojo.response.base;
 
 import com.hdu.lease.exception.BaseBizException;
+import com.hdu.lease.utils.ErrorFormatter;
 import lombok.*;
 
 /**
@@ -32,21 +33,21 @@ public class BaseGenericsResponse<T> extends BaseResponse{
         return this;
     }
 
-    public static <T> BaseGenericsResponse<T> failureBaseResp(String info) {
+    public static <T> BaseGenericsResponse<T> failureBaseResp(int i, String info) {
         BaseGenericsResponse<T> BaseGenericsResponse = new BaseGenericsResponse();
-        BaseGenericsResponse.failureMsg(info);
+        BaseGenericsResponse.failureMsg(i, info);
         return BaseGenericsResponse;
     }
 
-    public static <T> BaseGenericsResponse<T> failureBaseResp(BaseBizException e) {
+    public static <T> BaseGenericsResponse<T> failureBaseRespWithCode(String errorCode, String info) {
         BaseGenericsResponse<T> BaseGenericsResponse = new BaseGenericsResponse<>();
-        BaseGenericsResponse.failureMsg(e.getMessage());
-        BaseGenericsResponse.setCode(e.getErrorCode());
+        BaseGenericsResponse.setCode(errorCode);
+        BaseGenericsResponse.setMsg(info);
         return BaseGenericsResponse;
     }
 
-    public BaseGenericsResponse failureMsg(String info) {
-        this.setCode(FAIL_STATUS);
+    public BaseGenericsResponse failureMsg(int i, String info) {
+        this.setCode(i == 1 ? FAIL_STATUS : DISAPPEAR_STATUS);
         this.setMsg(info);
         return this;
     }

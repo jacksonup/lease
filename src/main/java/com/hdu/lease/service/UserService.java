@@ -2,11 +2,13 @@ package com.hdu.lease.service;
 
 import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.request.BaseRequest;
+import com.hdu.lease.pojo.request.GetAllUserListRequest;
 import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jackson
@@ -56,13 +58,14 @@ public interface UserService {
      */
     BaseGenericsResponse<String> modifyPassword(BaseRequest baseRequest) throws Exception;
 
+
     /**
-     * 更改用户信息
+     * 修改用户信息
      *
-     * @param baseRequest
+     * @param modifyUserInfoRequest
      * @return
      */
-    BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest);
+    BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest) throws Exception;
 
     /**
      * 获取指定用户信息
@@ -70,21 +73,28 @@ public interface UserService {
      * @param baseRequest
      * @return
      */
-    BaseGenericsResponse<String> oneInfo(BaseRequest baseRequest);
+    BaseGenericsResponse<UserInfoDTO> oneInfo(BaseRequest baseRequest) throws Exception;
 
     /**
      * 获取所有用户
      *
-     * @param baseRequest
+     * @param getAllUserListRequest
      * @return
      */
-    BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(BaseRequest baseRequest);
+    BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws ExecutionException, InterruptedException;
 
     /**
-     *
+     * 获取角色1 用户列表
      *
      * @param baseRequest
      * @return
      */
-    BaseGenericsResponse<UserInfoDTO> getRoleOnesUserList(BaseRequest baseRequest);
+    BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(BaseRequest baseRequest) throws Exception;
+
+    /**
+     * 登出
+     *
+     * @return
+     */
+    BaseGenericsResponse<String> logout(BaseRequest baseRequest);
 }

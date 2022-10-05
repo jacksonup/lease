@@ -249,6 +249,8 @@ class LeaseApplicationTests {
 
        List<UserContract.User> userList = usercontract.getUserList(new BigInteger("0")).sendAsync().get();
 
+       userList.forEach(System.out::println);
+
     }
 
     @Test
