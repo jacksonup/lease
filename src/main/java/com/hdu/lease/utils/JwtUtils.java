@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.hdu.lease.pojo.dto.JwtTokenDTO;
 import com.hdu.lease.pojo.dto.TokenDTO;
 
 /**
@@ -30,6 +31,15 @@ public class JwtUtils {
         return builder.sign(Algorithm.HMAC256(SING));
     }
 
+    public static String createToken(JwtTokenDTO jwtTokenDTO) {
+        JWTCreator.Builder builder = JWT.create();
+        builder.withClaim("loginName", jwtTokenDTO.getLoginName());
+        builder.withClaim("name", jwtTokenDTO.getName());
+        builder.withClaim("email", jwtTokenDTO.getEmail());
+        builder.withClaim("phoneNumber", jwtTokenDTO.getPhoneNumber());
+
+        return builder.sign(Algorithm.HMAC256("2ea6c900-7c5e-43c0-b1e7-b4d5d71e541f"));
+    }
 
     /**
      * verify the token.

@@ -6,6 +6,7 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
+import com.hdu.lease.pojo.dto.JwtTokenDTO;
 import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.excel.UserInfo;
 import com.hdu.lease.property.ContractProperties;
@@ -23,7 +24,9 @@ import com.tencentcloudapi.sms.v20210111.SmsClient;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -455,6 +458,21 @@ class LeaseApplicationTests {
         redisTemplate.opsForValue().getAndSet("1", "2");
         System.out.println(redisTemplate.opsForValue().get("15906888912"));
 //        List<>
+    }
+
+    @Test
+    void test() {
+        log.info("开始对接衡石单点登录");
+        JwtTokenDTO jwtTokenDTO = new JwtTokenDTO();
+        jwtTokenDTO.setLoginName("zhenglf");
+
+        // 生成JWT加密串
+        String jwtToken = JwtUtils.createToken(jwtTokenDTO);
+        log.info("JWT加密串:{}", jwtToken);
+
+        // 生成url
+        String url = "http://10.20.149.82:8080/" + "?activeAuth=jwt-param&jwtParam=" + jwtToken;
+        log.info("url:{}", url);
     }
 
 }
