@@ -8,6 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -249,7 +253,9 @@ public class PlaceContract extends Contract {
     public static RemoteCall<PlaceContract> deploy(Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit) {
         return deployRemoteCall(PlaceContract.class, web3j, transactionManager, gasPrice, gasLimit, BINARY, "");
     }
-
+    @Getter
+    @Setter
+    @ToString
     public static class Place extends DynamicStruct {
         public String placeId;
 

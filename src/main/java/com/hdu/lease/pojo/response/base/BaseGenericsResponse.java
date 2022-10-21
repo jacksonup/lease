@@ -33,7 +33,7 @@ public class BaseGenericsResponse<T> extends BaseResponse{
         return this;
     }
 
-    public static <T> BaseGenericsResponse<T> failureBaseResp(int i, String info) {
+    public static <T> BaseGenericsResponse<T> failureBaseResp(String i, String info) {
         BaseGenericsResponse<T> BaseGenericsResponse = new BaseGenericsResponse();
         BaseGenericsResponse.failureMsg(i, info);
         return BaseGenericsResponse;
@@ -46,8 +46,8 @@ public class BaseGenericsResponse<T> extends BaseResponse{
         return BaseGenericsResponse;
     }
 
-    public BaseGenericsResponse failureMsg(int i, String info) {
-        this.setCode(i == 1 ? FAIL_STATUS : DISAPPEAR_STATUS);
+    public BaseGenericsResponse failureMsg(String i, String info) {
+        this.setCode(i);
         this.setMsg(info);
         return this;
     }
