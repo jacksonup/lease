@@ -1,5 +1,7 @@
 package com.hdu.lease.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,7 +17,13 @@ import lombok.ToString;
 @ToString
 public class Contract {
 
+    /**
+     * id 自增
+     */
+    @TableId(type = IdType.AUTO)
     private int id;
 
-    private String ContractAddress;
+    private String contractName;
+
+    private String contractAddress;
 }

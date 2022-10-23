@@ -1,15 +1,5 @@
 package com.hdu.lease.bussiness;
 
-import com.hdu.lease.constant.BusinessConstant;
-import com.hdu.lease.contract.UserContract;
-import org.web3j.crypto.Credentials;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.gas.StaticGasProvider;
-
-import java.math.BigInteger;
-
 public class UserContractBusiness {
 }
 //    String address;

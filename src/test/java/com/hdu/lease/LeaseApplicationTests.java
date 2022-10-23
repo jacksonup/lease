@@ -4,9 +4,8 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
-import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
-import com.hdu.lease.pojo.dto.JwtTokenDTO;
 import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.excel.UserInfo;
 import com.hdu.lease.property.ContractProperties;
@@ -14,7 +13,6 @@ import com.hdu.lease.service.UserService;
 import com.hdu.lease.property.SmsProperties;
 import com.hdu.lease.sms.SmsUtils;
 import com.hdu.lease.utils.ExcelUtils;
-import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.RandomNumberUtils;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -24,9 +22,7 @@ import com.tencentcloudapi.sms.v20210111.SmsClient;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import jdk.nashorn.internal.ir.annotations.Ignore;
-import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +62,7 @@ class LeaseApplicationTests {
 
     /**
      * 部署合约
+     * ganache-cli -d "tackle frozen poet aware struggle ridge february merge pulse doll enhance air"
      *
      * @throws Exception
      */
@@ -81,17 +78,65 @@ class LeaseApplicationTests {
                 contractProperties.getGasPrice(),
                 contractProperties.getGasLimit());
 
-        // 部署合约
+        // 部署用户合约
         UserContract userContract = UserContract.deploy(web3j, credentials, provider).send();
-
         log.info("UserContract合约地址：{}", userContract.getContractAddress());
         log.info("UserContract 是否可用：{}",userContract.isValid());
+
+        // 部署自提点合约
+        PlaceContract placeContract = PlaceContract.deploy(web3j, credentials, provider).send();
+        log.info("PlaceContract合约地址：{}", placeContract.getContractAddress());
+        log.info("PlaceContract 是否可用：{}",placeContract.isValid());
+
+        // 部署资产合约
+        AssetContract assetContract = AssetContract.deploy(web3j, credentials, provider).send();
+        log.info("AssetContract合约地址：{}", assetContract.getContractAddress());
+        log.info("AssetContract 是否可用：{}",assetContract.isValid());
+
+        // 部署自提点绑定资产合约
+        PlaceAssetContract placeAssetContract = PlaceAssetContract.deploy(web3j, credentials, provider).send();
+        log.info("PlaceAssetContract合约地址：{}", placeAssetContract.getContractAddress());
+        log.info("PlaceAssetContract 是否可用：{}",placeAssetContract.isValid());
+
+        // 部署资产明细
+        AssetDetailContract assetDetailContract = AssetDetailContract.deploy(web3j, credentials, provider).send();
+        log.info("AssetDetailContract合约地址：{}", assetDetailContract.getContractAddress());
+        log.info("AssetDetailContract 是否可用：{}",assetDetailContract.isValid());
 
         // 维护合约地址
         if (userContract.isValid()) {
             Contract contract = new Contract();
             contract.setId(1);
+            contract.setContractName("userContract");
             contract.setContractAddress(userContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
+        if (placeContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(2);
+            contract.setContractName("placeContract");
+            contract.setContractAddress(placeContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
+        if (assetContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(3);
+            contract.setContractName("assetContract");
+            contract.setContractAddress(assetContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
+        if (placeAssetContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(4);
+            contract.setContractName("placeAssetContract");
+            contract.setContractAddress(placeAssetContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
+        if (assetDetailContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(5);
+            contract.setContractName("assetDetailContract");
+            contract.setContractAddress(assetDetailContract.getContractAddress());
             contractMapper.updateById(contract);
         }
 
@@ -217,6 +262,8 @@ class LeaseApplicationTests {
 //       List<User> userList = usercontract.getUserList(new BigInteger("0")).send();
 
    }
+
+
 
     @Test
     void  getUserList() throws Exception{
@@ -365,12 +412,6 @@ class LeaseApplicationTests {
     }
 
     @Test
-    void testSmsConfig() {
-        System.out.println(smsConfig.getSecretId());
-        System.out.println(smsConfig.getSecretKey());
-    }
-
-    @Test
     void testSmsSend() {
         String[] templateParamSet = {"231333", "5"};
         smsUtils.send(templateParamSet, "8615906888912", "1390134");
@@ -379,13 +420,6 @@ class LeaseApplicationTests {
     @Test
     void testRandomNumber() {
         System.out.println(RandomNumberUtils.createRandomNumber(4));
-    }
-
-    @Test
-    void testJwt() {
-        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjo0ODAsImFjY291bnQiOiIxOTA1MjI0MSJ9.cK4MU8Gmvfmfwsdc87pNlhX55xmz-tnibzhV8xjqY4s";
-        System.out.println(JwtUtils.getTokenInfo(token).getClaim("account").asString());
-        System.out.println(JwtUtils.getTokenInfo(token).getClaim("role").asInt());
     }
 
     @Test
@@ -457,22 +491,6 @@ class LeaseApplicationTests {
         System.out.println(redisTemplate.opsForValue().get("1"));
         redisTemplate.opsForValue().getAndSet("1", "2");
         System.out.println(redisTemplate.opsForValue().get("15906888912"));
-//        List<>
-    }
-
-    @Test
-    void test() {
-        log.info("开始对接衡石单点登录");
-        JwtTokenDTO jwtTokenDTO = new JwtTokenDTO();
-        jwtTokenDTO.setLoginName("zhenglf");
-
-        // 生成JWT加密串
-        String jwtToken = JwtUtils.createToken(jwtTokenDTO);
-        log.info("JWT加密串:{}", jwtToken);
-
-        // 生成url
-        String url = "http://10.20.149.82:8080/" + "?activeAuth=jwt-param&jwtParam=" + jwtToken;
-        log.info("url:{}", url);
     }
 
 }

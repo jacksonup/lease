@@ -10,6 +10,7 @@ import com.hdu.lease.pojo.request.GetAllUserListRequest;
 import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
+import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.JwtUtils;
 import lombok.Setter;
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
 
         // 校验用户存在性
         if (user.getAccount().isEmpty()) {
-            return BaseGenericsResponse.failureBaseResp(2, "学号不存在");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.DISAPPEAR_STATUS, "学号不存在");
         }
 
         // 校验密码
@@ -90,7 +91,7 @@ public class UserServiceImpl implements UserService {
         System.out.println(encryptPassword);
         if(!encryptPassword.equals(user.getPassword())) {
             log.info("登录密码错误");
-            return BaseGenericsResponse.failureBaseResp(1, "密码错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "密码错误");
         }
 
         // 生成token
@@ -118,20 +119,20 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(token)) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
 
         // 取出account
         String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         UserContract.User user = usercontract.getUserInfo(account).send();
         // 校验用户存在性
         if (user.getAccount().isEmpty()) {
-            return BaseGenericsResponse.failureBaseResp(2,"学号不存在");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.DISAPPEAR_STATUS,"学号不存在");
         }
 
         UserInfoDTO userInfoDTO = new UserInfoDTO();
@@ -151,19 +152,19 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
         // 取出account
         String account = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
 
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return BaseGenericsResponse.failureBaseResp(1, "验证码错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "验证码错误");
         }
 
         usercontract.modifyPhoneByAccount(account, baseRequest.getPhone()).send();
@@ -177,7 +178,7 @@ public class UserServiceImpl implements UserService {
     public BaseGenericsResponse<String> modifyPasswordWithoutToken(@RequestBody BaseRequest baseRequest) throws Exception {
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return BaseGenericsResponse.failureBaseResp(1,"验证码错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"验证码错误");
         }
 
         usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
@@ -193,17 +194,17 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
         String account = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
-            return BaseGenericsResponse.failureBaseResp(1, "验证码错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "验证码错误");
         }
 
         usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
@@ -218,18 +219,18 @@ public class UserServiceImpl implements UserService {
     public BaseGenericsResponse<String> modifyUserInfoById(@RequestBody ModifyUserInfoRequest modifyUserInfoRequest) throws Exception {
         // 判断角色
         if (modifyUserInfoRequest.getRole().intValue() != 2) {
-            return BaseGenericsResponse.failureBaseResp(1, "权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         // 校验token
         if (!JwtUtils.verifyToken(modifyUserInfoRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
         String account = JwtUtils.getTokenInfo(modifyUserInfoRequest.getToken()).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         // 根据account获取用户信息
@@ -251,12 +252,12 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
         String account = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         // 根据account获取用户信息
@@ -277,12 +278,12 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(getAllUserListRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
         String account = JwtUtils.getTokenInfo(getAllUserListRequest.getToken()).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         List<UserContract.User> userList = usercontract.getUserList(getAllUserListRequest.getFrom()).sendAsync().get();
@@ -298,18 +299,18 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
         String account = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("account").asString();
         String role = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("role").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         // 判断角色
         if (!role.equals("2")) {
-            return BaseGenericsResponse.failureBaseResp(1, "权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         List<UserContract.User> userList = usercontract.getRoleList().send();
@@ -325,7 +326,7 @@ public class UserServiceImpl implements UserService {
         // 校验token
         if (!JwtUtils.verifyToken(baseRequest.getToken())) {
             log.error("token校验失败");
-            return BaseGenericsResponse.failureBaseResp(1, "token校验失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
 
         //获取account
@@ -333,7 +334,7 @@ public class UserServiceImpl implements UserService {
 
         // 校验token有效性
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
-            return BaseGenericsResponse.failureBaseResp(1, "token已失效，请重新登录");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         // 登出 删除key
