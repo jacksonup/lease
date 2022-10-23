@@ -14,16 +14,16 @@ import org.springframework.web.bind.annotation.*;
  * @date 2022/10/15
  */
 @RestController
-@RequestMapping("assert")
+@RequestMapping("asset")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AssetController {
 
     @Setter(onMethod_ = @Autowired)
     private AssertService assertService;
 
-    @PostMapping("createAssert")
+    @PostMapping("create")
     @ResponseBody
-    public BaseGenericsResponse<String> createAssert(CreateAssertRequest createAssertRequest) {
-        return assertService.createAssert(createAssertRequest);
+    public BaseGenericsResponse<String> create(CreateAssertRequest createAssertRequest) {
+        return assertService.create(createAssertRequest);
     }
 }

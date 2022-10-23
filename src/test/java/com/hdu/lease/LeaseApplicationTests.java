@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.entity.Contract;
@@ -35,7 +36,9 @@ import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @SpringBootTest
@@ -487,10 +490,14 @@ class LeaseApplicationTests {
 
     @Test
     void testRedis() {
-        redisTemplate.opsForValue().set("1", "1");
-        System.out.println(redisTemplate.opsForValue().get("1"));
-        redisTemplate.opsForValue().getAndSet("1", "2");
-        System.out.println(redisTemplate.opsForValue().get("15906888912"));
+        String message_detail_info = "{\"content\":\"<p>调度任务名称：test1</p><p>开始时间：2022-10-21 08:33:20&nbsp; 结束时间：2022-10-21 08:33:23</p><p>执行状态：执行失败</p><p>错误信息：节点：[dm_brb_cust_cptl_chg_dtl_dd] 执行失败。 错误原因：The task is failed with exception!\\n Exception: ALTER command denied to user 'hdp_test'@'10.130.7.%' for table 'dm_brb_cust_cptl_chg_dtl_dd'</p>\",\"endTimeStr\":\"2022-10-21 08:33:23\",\"errorCode\":\"9999\",\"errorInfo\":\"节点：[dm_brb_cust_cptl_chg_dtl_dd] 执行失败。 错误原因：The task is failed with exception!\\n Exception: ALTER command denied to user 'hdp_test'@'10.130.7.%' for table 'dm_brb_cust_cptl_chg_dtl_dd'\",\"executionParams\":{\"nodeNameAlias\":\"dm_brb_cust_cptl_chg_dtl_dd\"},\"instanceId\":\"00120221021083320534993911\",\"jobKey\":\"202210210053\",\"jobName\":\"test1\",\"nodeName\":null,\"nodeServiceId\":null,\"nodeType\":null,\"recipient\":null,\"requestId\":null,\"rootJobKey\":null,\"serviceId\":null,\"startTimeStr\":\"2022-10-21 08:33:20\",\"state\":\"5\",\"stateName\":\"执行失败\",\"stepNodeInstances\":[{\"nodeName\":\"\",\"nodeNameAlias\":\"dm_brb_cust_cptl_chg_dtl_dd\"}],\"subject\":null,\"systemId\":\"001\"}";
+        JSONObject info = JSONObject.parseObject(message_detail_info);
+        System.out.println(info);
+        String content = info.getString("content");
+        content = content.replaceAll("&nbsp;", " ");//空格替换
+        content = content.replaceAll("</p><p>", "\n").replaceAll("<br>", "\n");//回车替换
+        content = content.replaceAll("<p>", "").replaceAll("</p>", ""); //开始和末尾的替换
+        System.out.println(content);
     }
 
 }

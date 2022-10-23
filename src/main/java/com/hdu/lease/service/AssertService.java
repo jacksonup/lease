@@ -17,5 +17,5 @@ public interface AssertService {
      * @param createAssertRequest
      * @return
      */
-    BaseGenericsResponse<String> createAssert(CreateAssertRequest createAssertRequest);
+    BaseGenericsResponse<String> create(CreateAssertRequest createAssertRequest) throws Exception;
 }

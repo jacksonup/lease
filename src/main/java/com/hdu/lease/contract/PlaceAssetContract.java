@@ -193,6 +193,7 @@ public class PlaceAssetContract extends Contract {
         return deployRemoteCall(PlaceAssetContract.class, web3j, transactionManager, gasPrice, gasLimit, BINARY, "");
     }
 
+
     public static class PlaceAsset extends DynamicStruct {
         public String placeAssetId;
 
