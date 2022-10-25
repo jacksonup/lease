@@ -124,9 +124,19 @@ public class PlaceServiceImpl implements PlaceService{
                 placeAssetContract.getContractAddress(),
                 account,
                 placeId).send();
-        return BaseGenericsResponse.successBaseResp(
-                placeContract.getDeleteMsgEvents(deletePlaceTransactionReceipt).get(0).data
-        );
+
+        PlaceContract.DeleteMsgEventResponse deleteMsgEventResponse = placeContract.getDeleteMsgEvents(deletePlaceTransactionReceipt).get(0);
+
+        int code = deleteMsgEventResponse.getCode().intValue();
+        String msg = "删除成功";
+        if (code == 10001) {
+            msg = "角色权限不足";
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, msg);
+        } else if (code == 10002) {
+            msg = "自提点已绑定物资";
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, msg);
+        }
+        return BaseGenericsResponse.successBaseResp(msg);
     }
 
     /**

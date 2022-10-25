@@ -21,9 +21,13 @@ public class AssetController {
     @Setter(onMethod_ = @Autowired)
     private AssertService assertService;
 
-    @PostMapping("create")
+    @PostMapping("/create")
     @ResponseBody
-    public BaseGenericsResponse<String> create(CreateAssertRequest createAssertRequest) {
+    public BaseGenericsResponse<String> create(CreateAssertRequest createAssertRequest) throws Exception {
         return assertService.create(createAssertRequest);
     }
+//
+//    @GetMapping("/getList")
+//    @ResponseBody
+//    public BaseGenericsResponse<List<>>
 }

@@ -123,7 +123,7 @@ public class AssertServiceImpl implements AssertService{
                 createAssertRequest.getName(),
                 createAssertRequest.getApply(),
                 createAssertRequest.getPicUrl(),
-                String.valueOf(createAssertRequest.getValue()),
+                new BigInteger(String.valueOf(createAssertRequest.getValue())),
                 new BigInteger(String.valueOf(count)),
                 new BigInteger("0")
         );

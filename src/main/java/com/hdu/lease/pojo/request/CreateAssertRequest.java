@@ -35,7 +35,7 @@ public class CreateAssertRequest {
     /**
      * 价值
      */
-    private Double value;
+    private int value;
 
     /**
      * 自提点列表
