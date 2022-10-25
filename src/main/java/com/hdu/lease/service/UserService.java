@@ -97,4 +97,12 @@ public interface UserService {
      * @return
      */
     BaseGenericsResponse<String> logout(BaseRequest baseRequest);
+
+    /**
+     * 判断是否是角色二
+     *
+     * @param token
+     * @return
+     */
+    Boolean judgeRole(String token) throws Exception;
 }

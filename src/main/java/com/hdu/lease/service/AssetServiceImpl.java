@@ -3,23 +3,30 @@ package com.hdu.lease.service;
 import com.hdu.lease.contract.AssetContract;
 import com.hdu.lease.contract.AssetDetailContract;
 import com.hdu.lease.contract.PlaceAssetContract;
+import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
+import com.hdu.lease.pojo.dto.AssetDTO;
+import com.hdu.lease.pojo.dto.PlaceDTO;
+import com.hdu.lease.pojo.dto.ScannedAssetDTO;
+import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.entity.Contract;
+import com.hdu.lease.pojo.request.AssetApplyRequest;
+import com.hdu.lease.pojo.request.AssetBorrowRequest;
 import com.hdu.lease.pojo.request.CreateAssertRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
+import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +39,18 @@ import java.util.Map;
  * @date 2022/10/15
  */
 @Service("assertService")
-public class AssertServiceImpl implements AssertService{
+public class AssetServiceImpl implements AssetService {
 
     @Setter(onMethod_ = @Autowired)
     private ContractProperties contractProperties;
 
     @Setter(onMethod_ = @Autowired)
     private ContractMapper contractMapper;
+
+    @Setter(onMethod_ = @Autowired)
+    private UserService userService;
+
+    private UserContract userContract;
 
     private AssetContract assertContract;
 
@@ -63,11 +75,13 @@ public class AssertServiceImpl implements AssertService{
 
         // 取合约地址
         Contract userContractEntity = contractMapper.selectById(1);
+        Contract assetContractEntity = contractMapper.selectById(3);
         Contract placeAssetContractEntity = contractMapper.selectById(4);
         Contract assetDetailContractEntity = contractMapper.selectById(5);
 
         // 加载合约
-        assertContract = AssetContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
+        userContract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
+        assertContract = AssetContract.load(assetContractEntity.getContractAddress(), web3j, credentials, provider);
         placeAssetContract = PlaceAssetContract.load(
                 placeAssetContractEntity.getContractAddress(),
                 web3j,
@@ -117,7 +131,6 @@ public class AssertServiceImpl implements AssertService{
 
         // 创建资产
         // 是否需要借用审核、需要改数据类型、
-        // TODO 1、价值是double类型
         AssetContract.Asset asset = new AssetContract.Asset(
                 assetId,
                 createAssertRequest.getName(),
@@ -147,4 +160,95 @@ public class AssertServiceImpl implements AssertService{
 
         return BaseGenericsResponse.successBaseResp("创建成功");
     }
+
+    /**
+     * 获取指定资产信息
+     *
+     * @param token
+     * @param placeId
+     * @return
+     */
+    @Override
+    public BaseGenericsResponse<List<AssetDTO>> getList(String token, String placeId) throws Exception {
+        // 判断角色
+        if (!userService.judgeRole(token)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "角色权限不足");
+        }
+
+        // 获取资产信息
+        List<AssetContract.Asset> assetList = assertContract.getAssetListPlaceId(placeAssetContract.getContractAddress(), placeId).send();
+        List<AssetDTO> assetDTOList = one(assetList);
+
+        //
+
+        return null;
+    }
+
+    /**
+     * 收回物资
+     *
+     * @param token
+     * @param assetId
+     * @return
+     */
+    @Override
+    public BaseGenericsResponse<String> back(String token, String assetId) {
+        return null;
+    }
+
+    /**
+     * 上传图片
+     *
+     * @param token
+     * @param picture
+     * @param assetId
+     * @return
+     */
+    @Override
+    public BaseGenericsResponse<String> uploadPic(String token, String picture, String assetId) {
+        return null;
+    }
+
+    /**
+     * 申请借用
+     *
+     * @param assetApplyRequest
+     * @return
+     */
+    @Override
+    public BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) {
+        return null;
+    }
+
+    @Override
+    public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) {
+        return null;
+    }
+
+    @Override
+    public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) {
+        return null;
+    }
+
+    /**
+     * Asset -> AssetDTO list
+     *
+     * @return
+     */
+    public List<AssetDTO> one(List<AssetContract.Asset> assetList) {
+        List<AssetDTO> assetDTOList = new ArrayList<>();
+        assetList.forEach(asset -> {
+            AssetDTO assetDTO = new AssetDTO();
+            assetDTO.setApply(asset.getIsApply());
+            assetDTO.setPicUrl(asset.getPicUrl());
+            assetDTO.setName(asset.getAssetName());
+            assetDTO.setValue(asset.getPrice().intValue());
+            assetDTOList.add(assetDTO);
+        });
+        return assetDTOList;
+    }
+
+
+
+
 }

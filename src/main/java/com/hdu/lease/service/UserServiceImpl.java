@@ -343,6 +343,19 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean judgeRole(String token) throws Exception {
+        String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
+        UserContract.User user = usercontract.getUserInfo(account).send();
+        if (user == null) {
+            return false;
+        }
+        return user.getRole().intValue() == 2;
+    }
+
+    /**
      * User -> UserInfoDTO list
      *
      * @return
