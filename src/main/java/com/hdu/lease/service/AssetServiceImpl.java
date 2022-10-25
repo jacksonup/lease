@@ -162,11 +162,7 @@ public class AssetServiceImpl implements AssetService {
     }
 
     /**
-     * 获取指定资产信息
-     *
-     * @param token
-     * @param placeId
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public BaseGenericsResponse<List<AssetDTO>> getList(String token, String placeId) throws Exception {
@@ -177,11 +173,20 @@ public class AssetServiceImpl implements AssetService {
 
         // 获取资产信息
         List<AssetContract.Asset> assetList = assertContract.getAssetListPlaceId(placeAssetContract.getContractAddress(), placeId).send();
-        List<AssetDTO> assetDTOList = one(assetList);
+        List<AssetDTO> assetDTOList = new ArrayList<>();
 
-        //
 
-        return null;
+        for (int i = 0; i < assetList.size(); i++) {
+            // 获取可用余量
+            List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("0")).send();
+            AssetDTO assetDTO = one(assetList.get(i));
+            assetDTO.setRest(assetDetailList.size());
+            // TODO 获取绑定的自提点
+
+            assetDTOList.add(assetDTO);
+        }
+
+        return BaseGenericsResponse.successBaseResp(assetDTOList);
     }
 
     /**
@@ -231,21 +236,17 @@ public class AssetServiceImpl implements AssetService {
     }
 
     /**
-     * Asset -> AssetDTO list
+     * Asset -> AssetDTO
      *
      * @return
      */
-    public List<AssetDTO> one(List<AssetContract.Asset> assetList) {
-        List<AssetDTO> assetDTOList = new ArrayList<>();
-        assetList.forEach(asset -> {
+    public AssetDTO one(AssetContract.Asset asset) {
             AssetDTO assetDTO = new AssetDTO();
             assetDTO.setApply(asset.getIsApply());
             assetDTO.setPicUrl(asset.getPicUrl());
             assetDTO.setName(asset.getAssetName());
             assetDTO.setValue(asset.getPrice().intValue());
-            assetDTOList.add(assetDTO);
-        });
-        return assetDTOList;
+        return assetDTO;
     }
 
 

@@ -89,7 +89,7 @@ public interface UserService {
      * @param baseRequest
      * @return
      */
-    BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(BaseRequest baseRequest) throws Exception;
+    BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(String token) throws Exception;
 
     /**
      * 登出

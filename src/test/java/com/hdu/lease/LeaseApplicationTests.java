@@ -106,6 +106,7 @@ class LeaseApplicationTests {
         log.info("AssetDetailContract合约地址：{}", assetDetailContract.getContractAddress());
         log.info("AssetDetailContract 是否可用：{}",assetDetailContract.isValid());
 
+
         // 维护合约地址
         if (userContract.isValid()) {
             Contract contract = new Contract();

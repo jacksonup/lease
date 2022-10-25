@@ -129,13 +129,13 @@ public class UserController {
     /**
      * 获取角色1 用户列表
      *
-     * @param baseRequest
+     * @param token
      * @return
      */
     @GetMapping("/getRoleOnesUserList")
     @ResponseBody
-    public BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(BaseRequest baseRequest) throws Exception {
-        return userService.getRoleOnesUserList(baseRequest);
+    public BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(String token) throws Exception {
+        return userService.getRoleOnesUserList(token);
     }
 
     /**

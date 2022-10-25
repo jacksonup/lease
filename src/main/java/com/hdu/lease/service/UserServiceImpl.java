@@ -295,21 +295,21 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(@RequestBody BaseRequest baseRequest) throws Exception {
+    public BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(String token) throws Exception {
         // 校验token
-        if (!JwtUtils.verifyToken(baseRequest.getToken())) {
+        if (!JwtUtils.verifyToken(token)) {
             log.error("token校验失败");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
-        String account = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("account").asString();
-        String role = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("role").asString();
+        String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
+        int role = JwtUtils.getTokenInfo(token).getClaim("role").asInt();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
         // 判断角色
-        if (!role.equals("2")) {
+        if (role != 2) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 

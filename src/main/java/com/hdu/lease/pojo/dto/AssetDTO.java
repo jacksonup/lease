@@ -21,7 +21,7 @@ public class AssetDTO {
 
     private String name;
 
-    private String rest;
+    private int rest;
 
     private Boolean apply;
 
