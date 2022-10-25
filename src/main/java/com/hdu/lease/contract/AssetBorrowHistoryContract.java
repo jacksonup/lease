@@ -212,7 +212,7 @@ public class AssetBorrowHistoryContract extends Contract {
 
     @Getter
     @Setter
-    @ToString
+
     public static class AssetBorrowHistory extends DynamicStruct {
         public String assetBorrowApplyId;
 
