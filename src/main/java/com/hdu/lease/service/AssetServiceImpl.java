@@ -1,9 +1,6 @@
 package com.hdu.lease.service;
 
-import com.hdu.lease.contract.AssetContract;
-import com.hdu.lease.contract.AssetDetailContract;
-import com.hdu.lease.contract.PlaceAssetContract;
-import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.AssetDTO;
 import com.hdu.lease.pojo.dto.PlaceDTO;
@@ -33,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * 资产服务实现类
  *
  * @author chenyb46701
  * @date 2022/10/15
@@ -167,7 +164,7 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public BaseGenericsResponse<List<AssetDTO>> getList(String token, String placeId) throws Exception {
         // 判断角色
-        if (!userService.judgeRole(token)) {
+        if (!userService.judgeRole(token, 2)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "角色权限不足");
         }
 
@@ -175,14 +172,14 @@ public class AssetServiceImpl implements AssetService {
         List<AssetContract.Asset> assetList = assertContract.getAssetListPlaceId(placeAssetContract.getContractAddress(), placeId).send();
         List<AssetDTO> assetDTOList = new ArrayList<>();
 
-
         for (int i = 0; i < assetList.size(); i++) {
             // 获取可用余量
             List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("0")).send();
             AssetDTO assetDTO = one(assetList.get(i));
             assetDTO.setRest(assetDetailList.size());
             // TODO 获取绑定的自提点
-
+            List<String> placeList = placeAssetContract.getPlaceListByAssetId(assetList.get(i).getAssetId()).send();
+            assetDTO.setPlaceList(placeList);
             assetDTOList.add(assetDTO);
         }
 
@@ -190,24 +187,20 @@ public class AssetServiceImpl implements AssetService {
     }
 
     /**
-     * 收回物资
-     *
-     * @param token
-     * @param assetId
-     * @return
+     * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> back(String token, String assetId) {
+    public BaseGenericsResponse<String> back(String token, String assetId) throws Exception {
+        if (!userService.judgeRole(token, 1)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
+        }
+
+
         return null;
     }
 
     /**
-     * 上传图片
-     *
-     * @param token
-     * @param picture
-     * @param assetId
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public BaseGenericsResponse<String> uploadPic(String token, String picture, String assetId) {
@@ -215,13 +208,32 @@ public class AssetServiceImpl implements AssetService {
     }
 
     /**
-     * 申请借用
-     *
-     * @param assetApplyRequest
-     * @return
+     * {@inheritDoc}
      */
     @Override
     public BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) {
+        // 借用者学号
+        String borrowerAccount = JwtUtils.getTokenInfo(assetApplyRequest.getToken()).getClaim("account").asString();
+
+        String blankStr = "";
+        // 创建物资申请表单
+//        AssetBorrowHistoryContract.AssetBorrowHistory assetBorrowHistory = new AssetBorrowHistoryContract.AssetBorrowHistory(
+//                UuidUtils.createUuid(),
+//                assetApplyRequest.getAssetType(),
+//                assetApplyRequest.getPlacId(),
+//                borrowerAccount,
+//                assetApplyRequest.getFrom(),
+//                assetApplyRequest.getTo(),
+//                assetApplyRequest.getReason(),
+//                assetApplyRequest.getCount(),
+//                new BigInteger("1"),
+//                blankStr,
+//                blankStr
+//        );
+
+
+
+
         return null;
     }
 
@@ -230,8 +242,12 @@ public class AssetServiceImpl implements AssetService {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) {
+
         return null;
     }
 

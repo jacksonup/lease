@@ -65,6 +65,7 @@ class LeaseApplicationTests {
 
     /**
      * 部署合约
+     * ganache不关闭，可以不用重新部署；ganache 重启需部署
      * ganache-cli -d "tackle frozen poet aware struggle ridge february merge pulse doll enhance air"
      *
      * @throws Exception
@@ -260,52 +261,10 @@ class LeaseApplicationTests {
                new BigInteger("0"),
                new BigInteger("0")
        );
-//       usercontract.modifyUserInfoById(user).send();
         UserContract.User lyl = usercontract.getUserInfo("19052239").send();
         log.info("User:{}",lyl);
-//       List<User> userList = usercontract.getUserList(new BigInteger("0")).send();
 
    }
-
-
-
-    @Test
-    void  getUserList() throws Exception{
-        // 监听本地链
-        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
-
-        // 生成资格凭证
-        Credentials credentials = Credentials.create(contractProperties.getCredentials());
-
-        StaticGasProvider provider = new StaticGasProvider(
-                contractProperties.getGasPrice(),
-                contractProperties.getGasLimit());
-
-        // 取合约地址
-        Contract contract = contractMapper.selectById(1);
-
-        // 加载合约
-        UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
-        log.info("UserContract 是否可用：{}",usercontract.isValid());
-        // pwd 12345
-        UserContract.User lyl = new UserContract.User(
-                "19052239",
-                "lyl",
-                "18106660269",
-                "827ccb0eea8a706c4c34a16891f84e7b",
-                new BigInteger("1"),
-                new BigInteger("0"),
-                new BigInteger("0")
-        );
-        List<UserContract.User> list = new ArrayList<>();
-        list.add(lyl);
-        usercontract.batchAddUser(list).sendAsync().get();
-
-       List<UserContract.User> userList = usercontract.getUserList(new BigInteger("0")).sendAsync().get();
-
-       userList.forEach(System.out::println);
-
-    }
 
     @Test
     void contextLoads() {
@@ -419,86 +378,6 @@ class LeaseApplicationTests {
     void testSmsSend() {
         String[] templateParamSet = {"231333", "5"};
         smsUtils.send(templateParamSet, "8615906888912", "1390134");
-    }
-
-    @Test
-    void testRandomNumber() {
-        System.out.println(RandomNumberUtils.createRandomNumber(4));
-    }
-
-    @Test
-    void testExcel() {
-        System.out.println(ExcelUtils.getPath());
-        // 匿名内部类 不用额外写一个DemoDataListener
-        String fileName = ExcelUtils.getPath() +
-                "com" + File.separator +
-                "hdu" + File.separator +
-                "lease" + File.separator +
-                "excel" + File.separator +
-                "userInfo.xlsx";
-        System.out.println(fileName);
-
-//         这里 需要指定读用哪个class去读，然后读取第一个sheet 文件流会自动关闭
-        EasyExcel.read(fileName, UserInfo.class, new ReadListener<UserInfo>() {
-
-            /**
-             * 单次缓存的数据量
-             */
-            public static final int BATCH_COUNT = 100;
-            /**
-             * 临时存储
-             */
-            private List<UserInfo> cachedDataList = ListUtils.newArrayListWithExpectedSize(BATCH_COUNT);
-
-            @Override
-            public void invoke(UserInfo data, AnalysisContext context) {
-                cachedDataList.add(data);
-                if (cachedDataList.size() >= BATCH_COUNT) {
-//                    saveData();
-                    // 存储完成清理 list
-                    cachedDataList = ListUtils.newArrayListWithExpectedSize(BATCH_COUNT);
-                }
-            }
-
-            @Override
-            public void doAfterAllAnalysed(AnalysisContext context) {
-                saveData();
-            }
-
-            /**
-             * 加上存储数据库
-             */
-            private void saveData() {
-                log.info("{}条数据，开始存储数据库！", cachedDataList.size());
-                for (UserInfo userInfo : cachedDataList) {
-                    log.info(userInfo.toString());
-                    UserContract.User byAccount = null;
-                    if (byAccount == null) {
-//                        User user = new User();
-//                        user.setUsername(userInfo.getUsername());
-//                        user.setAccount(userInfo.getAccount());
-//                        user.setPassword(DigestUtils.md5Hex(userInfo.getPassword()));
-//                        user.setPhone(userInfo.getPhone());
-//                        user.setIsBindPhone(StringUtils.isEmpty(userInfo.getPhone()) ? 0 : 1);
-//                        User save = userRepository.save(user);
-                    }
-                }
-                log.info("存储数据库成功！");
-            }
-        }).sheet().doRead();
-    }
-
-
-    @Test
-    void testRedis() {
-        String message_detail_info = "{\"content\":\"<p>调度任务名称：test1</p><p>开始时间：2022-10-21 08:33:20&nbsp; 结束时间：2022-10-21 08:33:23</p><p>执行状态：执行失败</p><p>错误信息：节点：[dm_brb_cust_cptl_chg_dtl_dd] 执行失败。 错误原因：The task is failed with exception!\\n Exception: ALTER command denied to user 'hdp_test'@'10.130.7.%' for table 'dm_brb_cust_cptl_chg_dtl_dd'</p>\",\"endTimeStr\":\"2022-10-21 08:33:23\",\"errorCode\":\"9999\",\"errorInfo\":\"节点：[dm_brb_cust_cptl_chg_dtl_dd] 执行失败。 错误原因：The task is failed with exception!\\n Exception: ALTER command denied to user 'hdp_test'@'10.130.7.%' for table 'dm_brb_cust_cptl_chg_dtl_dd'\",\"executionParams\":{\"nodeNameAlias\":\"dm_brb_cust_cptl_chg_dtl_dd\"},\"instanceId\":\"00120221021083320534993911\",\"jobKey\":\"202210210053\",\"jobName\":\"test1\",\"nodeName\":null,\"nodeServiceId\":null,\"nodeType\":null,\"recipient\":null,\"requestId\":null,\"rootJobKey\":null,\"serviceId\":null,\"startTimeStr\":\"2022-10-21 08:33:20\",\"state\":\"5\",\"stateName\":\"执行失败\",\"stepNodeInstances\":[{\"nodeName\":\"\",\"nodeNameAlias\":\"dm_brb_cust_cptl_chg_dtl_dd\"}],\"subject\":null,\"systemId\":\"001\"}";
-        JSONObject info = JSONObject.parseObject(message_detail_info);
-        System.out.println(info);
-        String content = info.getString("content");
-        content = content.replaceAll("&nbsp;", " ");//空格替换
-        content = content.replaceAll("</p><p>", "\n").replaceAll("<br>", "\n");//回车替换
-        content = content.replaceAll("<p>", "").replaceAll("</p>", ""); //开始和末尾的替换
-        System.out.println(content);
     }
 
 }

@@ -6,6 +6,7 @@ import com.hdu.lease.pojo.request.GetAllUserListRequest;
 import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -86,7 +87,7 @@ public interface UserService {
     /**
      * 获取角色1 用户列表
      *
-     * @param baseRequest
+     * @param token
      * @return
      */
     BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(String token) throws Exception;
@@ -104,5 +105,13 @@ public interface UserService {
      * @param token
      * @return
      */
-    Boolean judgeRole(String token) throws Exception;
+    Boolean judgeRole(String token, int roleId) throws Exception;
+
+    /**
+     * 导入用户
+     *
+     * @param file
+     * @return
+     */
+    BaseGenericsResponse<String> importUser(MultipartFile file) throws Exception;
 }

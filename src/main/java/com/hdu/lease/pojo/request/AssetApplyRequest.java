@@ -12,12 +12,14 @@ import lombok.Getter;
 public class AssetApplyRequest extends BaseRequest{
     private String assetType;
 
+    private String placId;
+
     private String from;
 
     private String to;
 
     private String reason;
 
-    private String count;
+    private int count;
 
 }

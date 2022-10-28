@@ -42,7 +42,7 @@ public class AssetController {
 
     @PostMapping("/back")
     @ResponseBody
-    public BaseGenericsResponse<String> back(String token, String assetId) {
+    public BaseGenericsResponse<String> back(String token, String assetId) throws Exception {
         return assetService.back(token, assetId);
     }
 

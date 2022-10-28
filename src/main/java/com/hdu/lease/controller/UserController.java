@@ -10,6 +10,7 @@ import com.hdu.lease.service.UserService;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -145,8 +146,8 @@ public class UserController {
      */
     @PostMapping("/importUser")
     @ResponseBody
-    public BaseGenericsResponse<String> importUser() {
-        return null;
+    public BaseGenericsResponse<String> importUser(@RequestParam("file") MultipartFile file) throws Exception {
+        return userService.importUser(file);
     }
 
     /**

@@ -12,6 +12,7 @@ import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
+import com.hdu.lease.utils.ExcelUtils;
 import com.hdu.lease.utils.JwtUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +21,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -346,13 +348,69 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public Boolean judgeRole(String token) throws Exception {
+    public Boolean judgeRole(String token, int roleId) throws Exception {
         String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
         UserContract.User user = usercontract.getUserInfo(account).send();
         if (user == null) {
             return false;
         }
-        return user.getRole().intValue() == 2;
+        return user.getRole().intValue() == roleId;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> importUser(MultipartFile file) throws Exception {
+        List<Map<Integer, List<String>>> infoList = ExcelUtils.readExcel(file);
+        List<UserContract.User> userList = new ArrayList<>();
+        HashSet<String> userSet = new HashSet<>();
+        // 批量插入
+
+        for (Map<Integer, List<String>> map : infoList) {
+            for (Integer i : map.keySet()) {
+                // 获取列的信息
+                List<String> list = map.get(i);
+                if (list.size() != 3) {
+                    return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "请输入内容，单元格不允许为空");
+                }
+                // 生成用户信息
+                String account = list.get(0);
+                String username = list.get(1);
+                String phone = list.get(2);
+                String password = DigestUtils.md5DigestAsHex(account.getBytes(StandardCharsets.UTF_8));
+                log.info("学号：{}, 用户名：{}, 手机号：{}", account, username, phone);
+                // 校验插入的用户是否重复
+                if (userSet.contains(account)) {
+                    return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户已存在");
+                }
+                userSet.add(account);
+
+                // 校验和链上的信息是否重复
+                try {
+                    UserContract.User userInfo = usercontract.getUserInfo(account).send();
+                    if (!userInfo.getAccount().equals("")) {
+                        return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户已存在");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                UserContract.User user = new UserContract.User(
+                        account,
+                        username,
+                        phone,
+                        password,
+                        new BigInteger("1"),
+                        new BigInteger("0"),
+                        new BigInteger("0")
+                );
+
+                userList.add(user);
+            }
+        }
+        usercontract.batchAddUser(userList).send();
+        return BaseGenericsResponse.successBaseResp("导入成功");
     }
 
     /**

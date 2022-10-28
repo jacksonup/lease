@@ -1,7 +1,6 @@
 package com.hdu.lease.service;
 
 import com.hdu.lease.pojo.dto.AssetDTO;
-import com.hdu.lease.pojo.dto.PlaceDTO;
 import com.hdu.lease.pojo.dto.ScannedAssetDTO;
 import com.hdu.lease.pojo.request.AssetApplyRequest;
 import com.hdu.lease.pojo.request.AssetBorrowRequest;
@@ -42,7 +41,7 @@ public interface AssetService {
      * @param assetId
      * @return
      */
-    BaseGenericsResponse<String> back(String token, String assetId);
+    BaseGenericsResponse<String> back(String token, String assetId) throws Exception;
 
     /**
      * 上传图片
@@ -64,5 +63,12 @@ public interface AssetService {
 
     BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest);
 
+    /**
+     * 获取扫码物资信息
+     *
+     * @param token
+     * @param assetId
+     * @return
+     */
     BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId);
 }
