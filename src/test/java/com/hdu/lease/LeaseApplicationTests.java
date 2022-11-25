@@ -38,6 +38,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -107,6 +108,10 @@ class LeaseApplicationTests {
         log.info("AssetDetailContract合约地址：{}", assetDetailContract.getContractAddress());
         log.info("AssetDetailContract 是否可用：{}",assetDetailContract.isValid());
 
+        // 部署审批合约
+        AuditContract auditContract = AuditContract.deploy(web3j, credentials, provider).send();
+        log.info("AuditContract合约地址：{}", auditContract.getContractAddress());
+        log.info("AuditContract 是否可用：{}",auditContract.isValid());
 
         // 维护合约地址
         if (userContract.isValid()) {
@@ -234,7 +239,7 @@ class LeaseApplicationTests {
     }
 
     @Test
-   void  modifyUserInfoById() throws Exception{
+    void  modifyUserInfoById() throws Exception{
        // 监听本地链
        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
 
@@ -378,6 +383,11 @@ class LeaseApplicationTests {
     void testSmsSend() {
         String[] templateParamSet = {"231333", "5"};
         smsUtils.send(templateParamSet, "8615906888912", "1390134");
+    }
+
+    @Test
+    void work() {
+
     }
 
 }

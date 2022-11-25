@@ -2,12 +2,9 @@ package com.hdu.lease.service;
 
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
-import com.hdu.lease.pojo.dto.TokenDTO;
-import com.hdu.lease.pojo.dto.UserInfoDTO;
+import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
-import com.hdu.lease.pojo.request.BaseRequest;
-import com.hdu.lease.pojo.request.GetAllUserListRequest;
-import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
+import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
@@ -411,6 +408,70 @@ public class UserServiceImpl implements UserService {
         }
         usercontract.batchAddUser(userList).send();
         return BaseGenericsResponse.successBaseResp("导入成功");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> reject(AuditRequest auditRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> agree(AuditRequest auditRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> read(String token, String infoId) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<InfoDTO> infos(NoticeCountListRequest noticeCountListRequest) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> readAll(String token, List<Long> infoIds) {
+        return null;
     }
 
     /**

@@ -1,12 +1,14 @@
 package com.hdu.lease.controller;
 
+import com.hdu.lease.pojo.dto.AuditFormDTO;
+import com.hdu.lease.pojo.dto.AuditPreviewDTO;
+import com.hdu.lease.pojo.dto.InfoDTO;
 import com.hdu.lease.pojo.dto.UserInfoDTO;
-import com.hdu.lease.pojo.request.BaseRequest;
-import com.hdu.lease.pojo.request.GetAllUserListRequest;
-import com.hdu.lease.pojo.request.ModifyUserInfoRequest;
+import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.service.UserService;
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -158,5 +160,92 @@ public class UserController {
     @PostMapping("/logout")
     public BaseGenericsResponse<String> logout(BaseRequest baseRequest) {
         return userService.logout(baseRequest);
+    }
+
+    /**
+     * 审批驳回
+     *
+     * @param auditRequest
+     * @return
+     */
+    @PostMapping("/audit/no")
+    public BaseGenericsResponse<String> reject(AuditRequest auditRequest) {
+        return userService.reject(auditRequest);
+    }
+
+    /**
+     * 同意申请
+     *
+     * @return
+     */
+    @PostMapping("/audit/yes")
+    public BaseGenericsResponse<String> agree(AuditRequest auditRequest) {
+        return userService.agree(auditRequest);
+    }
+
+    /**
+     * 获取审批表单
+     *
+     * @return
+     */
+    @PostMapping("/audit/audit")
+    public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) {
+        return userService.audit(auditRequest);
+    }
+
+    /**
+     * 按类型获取审批预览列表
+     *
+     * @return
+     */
+    @PostMapping("/audit/audits")
+    public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) {
+        return userService.audits(auditPreviewRequest);
+    }
+
+    /**
+     * 标记对应通知已读
+     *
+     * @param token
+     * @param infoId
+     * @return
+     */
+    @PostMapping("/info/read")
+    public BaseGenericsResponse<String> read(String token, String infoId) {
+        return userService.read(token, infoId);
+    }
+
+    /**
+     * 获取通知未读数量列表
+     *
+     * @param noticeCountListRequest
+     * @return
+     */
+    @GetMapping("/info/counts")
+    public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) {
+        return userService.counts(noticeCountListRequest);
+    }
+
+    /**
+     * 按类型获取通知
+     *
+     * @param noticeCountListRequest
+     * @return
+     */
+    @GetMapping("/info/infos")
+    public BaseGenericsResponse<InfoDTO> infos(NoticeCountListRequest noticeCountListRequest) {
+        return userService.infos(noticeCountListRequest);
+    }
+
+    /**
+     * 一键标为已读
+     *
+     * @param token
+     * @param infoIds
+     * @return
+     */
+    @PostMapping("/info/readAll")
+    public BaseGenericsResponse<String> readAll(String token, List<Long> infoIds) {
+        return userService.readAll(token, infoIds);
     }
 }

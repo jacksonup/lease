@@ -11,6 +11,7 @@ import com.hdu.lease.service.AssetService;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class AssetController {
 
     @PostMapping("/uploadPic")
     @ResponseBody
-    public BaseGenericsResponse<String> uploadPic(String token, String picture, String assetId) {
+    public BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) {
         return assetService.uploadPic(token, picture, assetId);
     }
 
@@ -66,7 +67,7 @@ public class AssetController {
 
     @GetMapping("/scanned")
     @ResponseBody
-    public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) {
+    public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) throws Exception {
         return assetService.scanned(token, assetId);
     }
 }

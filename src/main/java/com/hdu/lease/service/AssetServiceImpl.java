@@ -3,9 +3,7 @@ package com.hdu.lease.service;
 import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.AssetDTO;
-import com.hdu.lease.pojo.dto.PlaceDTO;
 import com.hdu.lease.pojo.dto.ScannedAssetDTO;
-import com.hdu.lease.pojo.dto.UserInfoDTO;
 import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.request.AssetApplyRequest;
 import com.hdu.lease.pojo.request.AssetBorrowRequest;
@@ -16,13 +14,15 @@ import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
-
 import javax.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ import java.util.Map;
  * @date 2022/10/15
  */
 @Service("assertService")
+@Slf4j
 public class AssetServiceImpl implements AssetService {
 
     @Setter(onMethod_ = @Autowired)
@@ -54,6 +55,8 @@ public class AssetServiceImpl implements AssetService {
     private PlaceAssetContract placeAssetContract;
 
     private AssetDetailContract assetDetailContract;
+
+    private AuditContract auditContract;
 
     /**
      * 调用智能合约
@@ -75,6 +78,7 @@ public class AssetServiceImpl implements AssetService {
         Contract assetContractEntity = contractMapper.selectById(3);
         Contract placeAssetContractEntity = contractMapper.selectById(4);
         Contract assetDetailContractEntity = contractMapper.selectById(5);
+        Contract auditContractEntity = contractMapper.selectById(6);
 
         // 加载合约
         userContract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
@@ -87,6 +91,12 @@ public class AssetServiceImpl implements AssetService {
         );
         assetDetailContract = AssetDetailContract.load(
                 assetDetailContractEntity.getContractAddress(),
+                web3j,
+                credentials,
+                provider
+        );
+        auditContract = AuditContract.load(
+                auditContractEntity.getContractAddress(),
                 web3j,
                 credentials,
                 provider
@@ -203,7 +213,8 @@ public class AssetServiceImpl implements AssetService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> uploadPic(String token, String picture, String assetId) {
+    public BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) {
+
         return null;
     }
 
@@ -211,42 +222,81 @@ public class AssetServiceImpl implements AssetService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) {
+    public BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) throws Exception {
         // 借用者学号
         String borrowerAccount = JwtUtils.getTokenInfo(assetApplyRequest.getToken()).getClaim("account").asString();
 
         String blankStr = "";
         // 创建物资申请表单
-//        AssetBorrowHistoryContract.AssetBorrowHistory assetBorrowHistory = new AssetBorrowHistoryContract.AssetBorrowHistory(
-//                UuidUtils.createUuid(),
-//                assetApplyRequest.getAssetType(),
-//                assetApplyRequest.getPlacId(),
-//                borrowerAccount,
-//                assetApplyRequest.getFrom(),
-//                assetApplyRequest.getTo(),
-//                assetApplyRequest.getReason(),
-//                assetApplyRequest.getCount(),
-//                new BigInteger("1"),
-//                blankStr,
-//                blankStr
-//        );
+        AuditContract.Audit audit = new AuditContract.Audit(
+                UuidUtils.createUuid(),
+                assetApplyRequest.getAssetType(),
+                assetApplyRequest.getPlacId(),
+                borrowerAccount,
+                assetApplyRequest.getFrom(),
+                assetApplyRequest.getTo(),
+                assetApplyRequest.getReason(),
+                BigInteger.valueOf(assetApplyRequest.getCount()),
+                new BigInteger("1"),
+                blankStr,
+                blankStr
+        );
 
+        // TODO 校验是否超过违规次数
 
+        // 添加审批记录
+        auditContract.insertAudit(audit).send();
 
-
-        return null;
+        return BaseGenericsResponse.successBaseResp("申请成功，请耐心等待审批");
     }
 
+    /**
+     * 立即借用
+     *
+     * @param assetBorrowRequest
+     * @return
+     */
     @Override
     public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) {
-        return null;
+        // 修改物资明细状态
+
+        // TODO 加入任务调度队列
+
+        // 添加借用记录
+
+        return BaseGenericsResponse.successBaseResp("借用成功");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) {
+    public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) throws Exception {
+        log.info("正在扫码获取物资信息...");
+        // 判断物资是否被借用
+        AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getAssetDetailByAssetDetailId(assetId).send();
+        if (ObjectUtils.isEmpty(assetDetail)) {
+            log.info("此物资已销毁");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"此物资已销毁");
+        }
+
+        // 根据主键获取资产信息
+        AssetContract.Asset asset =
+                assertContract.getAssetByAssetDetailId(assetDetailContract.getContractAddress(), assetId).send();
+        ScannedAssetDTO scannedAssetDTO = new ScannedAssetDTO();
+        scannedAssetDTO.setUrl(asset.getPicUrl());
+        scannedAssetDTO.setName(asset.getAssetName());
+        scannedAssetDTO.setValue(asset.getPrice().intValue());
+        scannedAssetDTO.setApply(asset.getIsApply());
+        scannedAssetDTO.setFree(assetDetail.getCurrentStatus().intValue() == 1);
+
+
+        // 判断是否处在借用状态
+        if (assetDetail.getCurrentStatus().intValue() == 1) {
+
+        }
+
+        //
 
         return null;
     }
@@ -266,6 +316,15 @@ public class AssetServiceImpl implements AssetService {
     }
 
 
+    /**
+     * 上传文件
+     *
+     * @param multipartFile 上传文件
+     * @return url
+     */
+    public String uploadFile(MultipartFile multipartFile, String folder) {
+        return null;
+    }
 
 
 }

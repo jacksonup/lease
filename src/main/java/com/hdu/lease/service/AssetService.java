@@ -6,6 +6,7 @@ import com.hdu.lease.pojo.request.AssetApplyRequest;
 import com.hdu.lease.pojo.request.AssetBorrowRequest;
 import com.hdu.lease.pojo.request.CreateAssertRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public interface AssetService {
      * @param assetId
      * @return
      */
-    BaseGenericsResponse<String> uploadPic(String token, String picture, String assetId);
+    BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId);
 
     /**
      * 申请借用
@@ -59,8 +60,14 @@ public interface AssetService {
      * @param assetApplyRequest
      * @return
      */
-    BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest);
+    BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) throws Exception;
 
+    /**
+     * 立即借用
+     *
+     * @param assetBorrowRequest
+     * @return
+     */
     BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest);
 
     /**
@@ -70,5 +77,5 @@ public interface AssetService {
      * @param assetId
      * @return
      */
-    BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId);
+    BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) throws Exception;
 }

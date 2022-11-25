@@ -12,17 +12,27 @@ spring:
     host: 127.0.0.1
     port: 6379
 
+# 腾讯云短信
 tencent:
   sms:
     secretId: AKID8FGc0ELTVOyOcdS9ew3x0tZ4SkqmUxBC
     secretKey: vd6NTvBN4buzPehgXCdtwjKuGOIyQdcx
     appId: 1400671597
 
+# 合约配置
 contract:
   credentials: 4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
   http-service: HTTP://127.0.0.1:8545
   gas-price: 2000000
   gas-limit: 6721975
+
+# 阿里云oss存储
+aliyun:
+  oss:
+    accessKeyId: LTAI5t6NXd7WFxeqbNKncGgw
+    accessKeySecret: MMQrsQVMVDnPuqp8UUFCBckTitM4u3
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    bucketName: dev-lease-picture
 
 
 

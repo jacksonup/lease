@@ -7,7 +7,7 @@ import lombok.Getter;
  * @date 2022/10/25
  */
 @Getter
-public class AssetBorrowRequest {
+public class AssetBorrowRequest extends BaseRequest{
     private String assetId;
 
     private String to;

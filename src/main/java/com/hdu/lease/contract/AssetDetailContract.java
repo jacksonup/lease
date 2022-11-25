@@ -8,6 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -246,6 +250,9 @@ public class AssetDetailContract extends Contract {
         return deployRemoteCall(AssetDetailContract.class, web3j, transactionManager, gasPrice, gasLimit, BINARY, "");
     }
 
+    @Getter
+    @Setter
+    @ToString
     public static class AssetDetail extends DynamicStruct {
         public String assetDetailId;
 
