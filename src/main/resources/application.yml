@@ -29,10 +29,10 @@ contract:
 # 阿里云oss存储
 aliyun:
   oss:
-    accessKeyId: LTAI5t6NXd7WFxeqbNKncGgw
-    accessKeySecret: MMQrsQVMVDnPuqp8UUFCBckTitM4u3
+    access-key-id: LTAI5t6NXd7WFxeqbNKncGgw
+    access-key-secret: MMQrsQVMVDnPuqp8UUFCBckTitM4u3
     endpoint: https://oss-cn-hangzhou.aliyuncs.com
-    bucketName: dev-lease-picture
+    bucket-name: dev-lease-picture
 
 
 

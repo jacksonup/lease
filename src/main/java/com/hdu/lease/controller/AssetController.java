@@ -55,7 +55,7 @@ public class AssetController {
 
     @PostMapping("/apply")
     @ResponseBody
-    public BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) {
+    public BaseGenericsResponse<String> apply(AssetApplyRequest assetApplyRequest) throws Exception {
         return assetService.apply(assetApplyRequest);
     }
 

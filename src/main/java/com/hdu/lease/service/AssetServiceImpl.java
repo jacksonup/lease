@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
@@ -206,6 +207,7 @@ public class AssetServiceImpl implements AssetService {
         }
 
 
+
         return null;
     }
 
@@ -288,12 +290,21 @@ public class AssetServiceImpl implements AssetService {
         scannedAssetDTO.setName(asset.getAssetName());
         scannedAssetDTO.setValue(asset.getPrice().intValue());
         scannedAssetDTO.setApply(asset.getIsApply());
-        scannedAssetDTO.setFree(assetDetail.getCurrentStatus().intValue() == 1);
+        scannedAssetDTO.setIsBorrow(assetDetail.getCurrentStatus().intValue() == 1);
+        scannedAssetDTO.setRest(asset.getCount().intValue());
 
+        // 获取空闲数量
+        List<AssetDetailContract.AssetDetail> assetDetailFreeList = assetDetailContract.getListByStatus(assetDetail.getAssetId(), new BigInteger("0")).send();
+        if (CollectionUtils.isEmpty(assetDetailFreeList)) {
+            scannedAssetDTO.setFree(0);
+        } else {
+            scannedAssetDTO.setFree(assetDetailFreeList.size());
+        }
 
         // 判断是否处在借用状态
         if (assetDetail.getCurrentStatus().intValue() == 1) {
-
+            // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】
+//            scannedAssetDTO.setExpiredTime();
         }
 
         //

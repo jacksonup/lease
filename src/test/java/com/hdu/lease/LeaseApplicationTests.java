@@ -149,6 +149,13 @@ class LeaseApplicationTests {
             contract.setContractAddress(assetDetailContract.getContractAddress());
             contractMapper.updateById(contract);
         }
+        if (auditContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(6);
+            contract.setContractName("auditContract");
+            contract.setContractAddress(auditContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
 
         // admin用户
         UserContract.User user = new UserContract.User(
