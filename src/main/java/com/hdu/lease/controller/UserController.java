@@ -169,7 +169,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/audit/no")
-    public BaseGenericsResponse<String> reject(AuditRequest auditRequest) {
+    public BaseGenericsResponse<String> reject(AuditRequest auditRequest) throws Exception {
         return userService.reject(auditRequest);
     }
 
@@ -179,7 +179,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/audit/yes")
-    public BaseGenericsResponse<String> agree(AuditRequest auditRequest) {
+    public BaseGenericsResponse<String> agree(AuditRequest auditRequest) throws Exception {
         return userService.agree(auditRequest);
     }
 
@@ -189,7 +189,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/audit/audit")
-    public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) {
+    public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) throws Exception {
         return userService.audit(auditRequest);
     }
 

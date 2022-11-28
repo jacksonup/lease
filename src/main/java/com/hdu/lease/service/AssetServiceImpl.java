@@ -115,6 +115,8 @@ public class AssetServiceImpl implements AssetService {
         // 绑定自提点资产,生成List<PlaceAsset>
         List<PlaceAssetContract.PlaceAsset> placeAssetList = new ArrayList<>();
         List<Map<String, Integer>> list = createAssertRequest.getPlaceList();
+        List<AssetDetailContract.AssetDetail> assetDetailList = new ArrayList<>();
+
         String placeId = "";
         // count:自提点绑定余量; sum:资产总量
         int count = 0, sum = 0;
@@ -124,7 +126,22 @@ public class AssetServiceImpl implements AssetService {
                 count = map.get(key);
                 sum += count;
                 placeId = key;
+
+                // 生产资产明细
+                // TODO 修改数据结构后，增加相应字段
+                for (int j = 0; j < count; j++) {
+                    AssetDetailContract.AssetDetail assetDetail = new AssetDetailContract.AssetDetail(
+                            UuidUtils.createUuid(),
+                            "",
+                            assetId,
+                            new BigInteger("0"),
+                            new BigInteger("0")
+                    );
+                    assetDetailList.add(assetDetail);
+                }
             }
+
+            // 自提点和资产绑定
             PlaceAssetContract.PlaceAsset placeAsset = new PlaceAssetContract.PlaceAsset(
                     UuidUtils.createUuid(),
                     placeId,
@@ -150,20 +167,6 @@ public class AssetServiceImpl implements AssetService {
         );
 
         assertContract.createAsset(asset).send();
-
-        // 生成资产明细
-        List<AssetDetailContract.AssetDetail> assetDetailList = new ArrayList<>();
-        for (int i = 0; i < sum; i++) {
-            AssetDetailContract.AssetDetail assetDetail = new AssetDetailContract.AssetDetail(
-                    UuidUtils.createUuid(),
-                    "",
-                    assetId,
-                    new BigInteger("0"),
-                    new BigInteger("0")
-            );
-            assetDetailList.add(assetDetail);
-        }
-
         assetDetailContract.insertAssetDetail(assetDetailList).send();
 
         return BaseGenericsResponse.successBaseResp("创建成功");
@@ -188,6 +191,7 @@ public class AssetServiceImpl implements AssetService {
             List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("0")).send();
             AssetDTO assetDTO = one(assetList.get(i));
             assetDTO.setRest(assetDetailList.size());
+
             // TODO 获取绑定的自提点
             List<String> placeList = placeAssetContract.getPlaceListByAssetId(assetList.get(i).getAssetId()).send();
             assetDTO.setPlaceList(placeList);
@@ -303,13 +307,11 @@ public class AssetServiceImpl implements AssetService {
 
         // 判断是否处在借用状态
         if (assetDetail.getCurrentStatus().intValue() == 1) {
-            // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】
+            // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】【placeId】
 //            scannedAssetDTO.setExpiredTime();
         }
 
-        //
-
-        return null;
+        return BaseGenericsResponse.successBaseResp(scannedAssetDTO);
     }
 
     /**

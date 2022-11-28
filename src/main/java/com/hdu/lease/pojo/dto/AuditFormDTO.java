@@ -14,7 +14,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class AuditFormDTO {
-    private String status;
+    private int status;
 
     private String auditor;
 
@@ -26,9 +26,9 @@ public class AuditFormDTO {
 
     private String assetName;
 
-    private String assetCount;
+    private int assetCount;
 
-    private String assetValue;
+    private Double assetValue;
 
     private String timeRange;
 

@@ -122,7 +122,7 @@ public interface UserService {
      * @param auditRequest
      * @return
      */
-    BaseGenericsResponse<String> reject(AuditRequest auditRequest);
+    BaseGenericsResponse<String> reject(AuditRequest auditRequest) throws Exception;
 
     /**
      * 同意申请
@@ -130,7 +130,7 @@ public interface UserService {
      * @param auditRequest
      * @return
      */
-    BaseGenericsResponse<String> agree(AuditRequest auditRequest);
+    BaseGenericsResponse<String> agree(AuditRequest auditRequest) throws Exception;
 
     /**
      * 获取申请表单
@@ -138,7 +138,7 @@ public interface UserService {
      * @param auditRequest
      * @return
      */
-    BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest);
+    BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) throws Exception;
 
     /**
      * 按类型获取审批预览列表

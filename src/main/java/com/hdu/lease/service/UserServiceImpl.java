@@ -1,5 +1,7 @@
 package com.hdu.lease.service;
 
+import com.hdu.lease.contract.AssetContract;
+import com.hdu.lease.contract.AuditContract;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
@@ -13,6 +15,8 @@ import com.hdu.lease.utils.ExcelUtils;
 import com.hdu.lease.utils.JwtUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -21,11 +25,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import javax.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -49,6 +56,10 @@ public class UserServiceImpl implements UserService {
 
     private UserContract usercontract;
 
+    private AssetContract assertContract;
+
+    private AuditContract auditContract;
+
     /**
      * 调用智能合约
      */
@@ -65,10 +76,20 @@ public class UserServiceImpl implements UserService {
                 contractProperties.getGasLimit());
 
         // 取合约地址
-        Contract contract = contractMapper.selectById(1);
+        Contract userContractEntity = contractMapper.selectById(1);
+        Contract assetContractEntity = contractMapper.selectById(3);
+        Contract auditContractEntity = contractMapper.selectById(6);
 
         // 加载合约
-        usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
+        usercontract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
+        assertContract = AssetContract.load(assetContractEntity.getContractAddress(), web3j, credentials, provider);
+        auditContract = AuditContract.load(
+                auditContractEntity.getContractAddress(),
+                web3j,
+                credentials,
+                provider
+        );
+
     }
 
     /**
@@ -414,24 +435,133 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> reject(AuditRequest auditRequest) {
-        return null;
+    public BaseGenericsResponse<String> reject(AuditRequest auditRequest) throws Exception {
+        log.info("驳回申请流程中...");
+        // 获取审批单
+        if (StringUtils.isEmpty(auditRequest.getAuditId())) {
+            log.error("审批单号为空");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
+        }
+
+        AuditContract.Audit audit = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+        if (ObjectUtils.isEmpty(audit)) {
+            log.error("审批单号错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号错误");
+        }
+
+        // TODO 增加字段审核人
+        String auditAccount = JwtUtils.getTokenInfo(auditRequest.getToken()).getClaim("account").asString();
+        if (StringUtils.isEmpty(auditAccount)) {
+            log.error("token失效");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
+        }
+//        audit.setAuditAccount(auditAccount);
+        audit.setReviewStatus(new BigInteger("3"));
+        audit.setReviewReason(auditRequest.getDenyReason());
+
+        // 获取当前时间
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        audit.setReviewTime(localDateTime.format(formatter));
+
+
+        TransactionReceipt transactionReceipt = auditContract.updateAuditInfo(audit).send();
+        int code = auditContract.getIsUpdateSuccessEvents(transactionReceipt).get(0).code.intValue();
+        // 这个判断实际无效...
+        if (code == 10001) {
+            log.error("未找到对象 更新失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
+        }
+
+        return BaseGenericsResponse.successBaseResp("更新成功");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> agree(AuditRequest auditRequest) {
-        return null;
+    public BaseGenericsResponse<String> agree(AuditRequest auditRequest) throws Exception {
+        // 获取审批单
+        if (StringUtils.isEmpty(auditRequest.getAuditId())) {
+            log.error("审批单号为空");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
+        }
+
+        AuditContract.Audit audit = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+        if (ObjectUtils.isEmpty(audit)) {
+            log.error("审批单号错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号错误");
+        }
+
+        // TODO 增加字段审核人
+        String auditAccount = JwtUtils.getTokenInfo(auditRequest.getToken()).getClaim("account").asString();
+        if (StringUtils.isEmpty(auditAccount)) {
+            log.error("token失效");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
+        }
+//        audit.setAuditAccount(auditAccount);
+        audit.setReviewStatus(new BigInteger("3"));
+        audit.setReviewReason("审批通过");
+
+        // 获取当前时间
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        audit.setReviewTime(localDateTime.format(formatter));
+
+
+        TransactionReceipt transactionReceipt = auditContract.updateAuditInfo(audit).send();
+        int code = auditContract.getIsUpdateSuccessEvents(transactionReceipt).get(0).code.intValue();
+        // 这个判断实际无效...
+        if (code == 10001) {
+            log.error("未找到对象 更新失败");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
+        }
+
+        return BaseGenericsResponse.successBaseResp("更新成功");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) {
-        return null;
+    public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) throws Exception {
+        // 获取审批单
+        if (StringUtils.isEmpty(auditRequest.getAuditId())) {
+            log.error("审批单号为空");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
+        }
+
+        AuditContract.Audit audit = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+        if (ObjectUtils.isEmpty(audit)) {
+            log.error("审批单号错误");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号错误");
+        }
+
+        int status = audit.getReviewStatus().intValue();
+        AuditFormDTO auditFormDTO = new AuditFormDTO();
+        auditFormDTO.setStatus(status);
+
+        // 获取审批者姓名
+//        UserContract.User auditUser = usercontract.getUserInfo(audit.getAuditAccount()).send();
+//        auditFormDTO.setApplyName(auditUser.getName());
+
+        UserContract.User applyUser = usercontract.getUserInfo(audit.getBorrowerAccount()).send();
+        auditFormDTO.setApplyName(applyUser.getName());
+        auditFormDTO.setApplyNum(applyUser.getAccount());
+        auditFormDTO.setAssetCount(audit.getCount().intValue());
+//        AssetContract.Asset asset = assertContract.getById(audit.getAssetId()).send();
+//        auditFormDTO.setAssetName(asset.getAssetName());
+//        auditFormDTO.setAssetValue(asset.getPrice().doubleValue());
+
+        auditFormDTO.setTimeRange(audit.getBeginTime() + " ~ " + audit.getEndTime());
+        auditFormDTO.setApplyReason(audit.getBorrowReason());
+
+        // 设置驳回理由
+        if (status == 3) {
+            auditFormDTO.setDenyReason(audit.getReviewReason());
+        }
+
+        return BaseGenericsResponse.successBaseResp(auditFormDTO);
     }
 
     /**
@@ -479,7 +609,7 @@ public class UserServiceImpl implements UserService {
      *
      * @return
      */
-    public List<UserInfoDTO> one(List<UserContract.User> userList) {
+    private List<UserInfoDTO> one(List<UserContract.User> userList) {
         List<UserInfoDTO> userInfoDTOList = new ArrayList<>();
         userList.forEach((user ->
         {
