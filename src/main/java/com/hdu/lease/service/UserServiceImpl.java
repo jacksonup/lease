@@ -262,11 +262,20 @@ public class UserServiceImpl implements UserService {
 
         // 根据account获取用户信息
         UserContract.User user = usercontract.getUserInfo(modifyUserInfoRequest.getAccount()).send();
-        user.setRole(modifyUserInfoRequest.getRole());
-        user.setName(modifyUserInfoRequest.getName());
-        user.setPhone(modifyUserInfoRequest.getPhone());
 
-        usercontract.modifyUserInfoById(user).send();
+        // 获取角色
+        BigInteger role = user.getRole();
+        UserContract.User newUser = new UserContract.User(
+                user.getAccount(),
+                modifyUserInfoRequest.getName(),
+                modifyUserInfoRequest.getPhone(),
+                user.getPassword(),
+                user.getIsBindPhone(),
+                role.intValue() == 2 ? role : modifyUserInfoRequest.getRole(),
+                user.getStatus()
+        );
+
+        usercontract.modifyUserInfoById(newUser).send();
 
         return BaseGenericsResponse.successBaseResp("修改成功");
     }
