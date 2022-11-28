@@ -379,13 +379,18 @@ public class AssetServiceImpl implements AssetService {
             // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】【placeId】
             scannedAssetDTO.setExpiredTime(assetDetail.getEndTime());
 
-            // 获取place信息
-            PlaceContract.Place place = placeContract.getPlaceInfo().send();
-            scannedAssetDTO.setPlace(place.getPlaceName());
+            String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
 
-            // 获取user信息
-
-
+            // 判断是否被自己借用
+            if (assetDetail.getCurrentUserAccount().equals(account)) {
+                // 获取place信息
+                PlaceContract.Place place = placeContract.getById(assetDetail.getPlaceId()).send();
+                scannedAssetDTO.setPlace(place.getPlaceName());
+            } else {
+                // 获取user信息
+                UserContract.User user = userContract.getUserInfo(account).send();
+                scannedAssetDTO.setUsername(user.getName());
+            }
         }
 
         return BaseGenericsResponse.successBaseResp(scannedAssetDTO);
