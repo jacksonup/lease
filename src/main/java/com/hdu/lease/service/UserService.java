@@ -20,6 +20,7 @@ public interface UserService {
      * @param account
      * @param password
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<LoginInfoResponse> login(String account, String password) throws Exception;
 
@@ -36,6 +37,7 @@ public interface UserService {
      *
      * @param baseRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> modifyPhone(BaseRequest baseRequest) throws Exception;
 
@@ -44,6 +46,7 @@ public interface UserService {
      *
      * @param baseRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> modifyPasswordWithoutToken(BaseRequest baseRequest) throws Exception;
 
@@ -52,6 +55,7 @@ public interface UserService {
      *
      * @param baseRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> modifyPassword(BaseRequest baseRequest) throws Exception;
 
@@ -61,6 +65,7 @@ public interface UserService {
      *
      * @param modifyUserInfoRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> modifyUserInfoById(ModifyUserInfoRequest modifyUserInfoRequest) throws Exception;
 
@@ -69,6 +74,7 @@ public interface UserService {
      *
      * @param baseRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<UserInfoDTO> oneInfo(BaseRequest baseRequest) throws Exception;
 
@@ -77,6 +83,7 @@ public interface UserService {
      *
      * @param getAllUserListRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<UsersDTO> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws Exception;
 
@@ -85,6 +92,7 @@ public interface UserService {
      *
      * @param token
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<List<UserInfoDTO>> getRoleOnesUserList(String token) throws Exception;
 
@@ -92,6 +100,7 @@ public interface UserService {
      * 登出
      *
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> logout(BaseRequest baseRequest);
 
@@ -100,6 +109,7 @@ public interface UserService {
      *
      * @param token
      * @return
+     * @throws Exception
      */
     Boolean judgeRole(String token, int roleId) throws Exception;
 
@@ -108,6 +118,7 @@ public interface UserService {
      *
      * @param file
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> importUser(MultipartFile file) throws Exception;
 
@@ -116,6 +127,7 @@ public interface UserService {
      *
      * @param auditRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> reject(AuditRequest auditRequest) throws Exception;
 
@@ -124,6 +136,7 @@ public interface UserService {
      *
      * @param auditRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> agree(AuditRequest auditRequest) throws Exception;
 
@@ -132,6 +145,7 @@ public interface UserService {
      *
      * @param auditRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) throws Exception;
 

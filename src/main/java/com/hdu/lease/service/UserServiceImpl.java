@@ -237,6 +237,7 @@ public class UserServiceImpl implements UserService {
     /**
      * {@inheritDoc}
      */
+    @Override
     public BaseGenericsResponse<String> modifyUserInfoById(@RequestBody ModifyUserInfoRequest modifyUserInfoRequest) throws Exception {
         // 判断角色
         if (modifyUserInfoRequest.getRole().intValue() != 2) {
