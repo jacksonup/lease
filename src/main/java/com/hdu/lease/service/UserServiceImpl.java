@@ -239,7 +239,6 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse<String> modifyUserInfoById(@RequestBody ModifyUserInfoRequest modifyUserInfoRequest) throws Exception {
-
         // 校验token
         if (!JwtUtils.verifyToken(modifyUserInfoRequest.getToken())) {
             log.error("token校验失败");
@@ -250,9 +249,15 @@ public class UserServiceImpl implements UserService {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
+
         // 判断角色
         if (!judgeRole(modifyUserInfoRequest.getToken(), 2)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        // 角色2不能修改自己的角色
+        if (account.equals(modifyUserInfoRequest.getAccount())) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "不允许修改自己的信息");
         }
 
         // 根据account获取用户信息
