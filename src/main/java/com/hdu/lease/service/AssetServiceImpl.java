@@ -1,5 +1,7 @@
 package com.hdu.lease.service;
 
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
 import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.AssetDTO;
@@ -11,6 +13,7 @@ import com.hdu.lease.pojo.request.CreateAssertRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
+import com.hdu.lease.property.OssProperties;
 import com.hdu.lease.utils.JwtUtils;
 import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
@@ -25,10 +28,16 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 资产服务实现类
@@ -48,6 +57,9 @@ public class AssetServiceImpl implements AssetService {
 
     @Setter(onMethod_ = @Autowired)
     private UserService userService;
+
+    @Setter(onMethod_ = @Autowired)
+    private OssProperties ossProperties;
 
     private UserContract userContract;
 
@@ -220,7 +232,63 @@ public class AssetServiceImpl implements AssetService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) {
+    public BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) throws Exception {
+        log.info("上传图片至阿里云oss...");
+        // 校验权限
+        if (!userService.judgeRole(token, 2)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
+        }
+
+        // 创建OSSClient实例
+        OSS ossClient = new OSSClientBuilder().build(
+                ossProperties.getEndpoint(),
+                ossProperties.getAccessKeyId(),
+                ossProperties.getAccessKeySecret());
+
+        try {
+            //获取上传文件输入流
+            InputStream inputStream = picture.getInputStream();
+
+            // 获取文件名称
+            log.info("生成文件名称...");
+            String fileName = picture.getOriginalFilename();
+
+            // 1、在文件名称里面添加随机唯一值(避免上传文件名称相同的话，后面的问号会将前面的文件给覆盖了)
+            String uuid = UUID.randomUUID().toString().replaceAll("-","");
+            fileName = uuid + fileName;
+
+            // 2、文件按照日期进行分类：2022/11/28/1.jpg
+            // 获取当前日期
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            LocalDate date = LocalDate.now();
+            String datePath = formatter.format(date);
+
+            fileName = datePath + "/" + fileName;
+            log.info("文件名为：{}", fileName);
+
+            // 调用oss方法进行上传
+            ossClient.putObject(ossProperties.getBucketName(), fileName, inputStream);
+
+            // 关闭ossClient
+            ossClient.shutdown();
+
+            // 返回url路径
+            String url = " https://" +
+                    ossProperties.getBucketName() + "." +
+                    ossProperties.getEndpoint() + "/" +
+                    fileName;
+            log.info("上传路径为：{}", url);
+            log.info("上传成功");
+
+            // 保存url
+            assertContract.modifyPictureUrl(assetId, url).send();
+
+            return BaseGenericsResponse.successBaseResp("上传成功");
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("上传失败");
+
+        }
         return null;
     }
 

@@ -52,7 +52,7 @@ public interface AssetService {
      * @param assetId
      * @return
      */
-    BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId);
+    BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) throws Exception;
 
     /**
      * 申请借用
