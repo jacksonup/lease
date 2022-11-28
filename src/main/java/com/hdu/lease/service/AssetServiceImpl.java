@@ -309,6 +309,7 @@ public class AssetServiceImpl implements AssetService {
         // 判断是否处在借用状态
         if (assetDetail.getCurrentStatus().intValue() == 1) {
             // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】【placeId】
+
 //            scannedAssetDTO.setExpiredTime();
         }
 

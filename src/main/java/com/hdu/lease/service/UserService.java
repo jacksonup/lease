@@ -1,16 +1,11 @@
 package com.hdu.lease.service;
 
-import com.hdu.lease.pojo.dto.AuditFormDTO;
-import com.hdu.lease.pojo.dto.AuditPreviewDTO;
-import com.hdu.lease.pojo.dto.InfoDTO;
-import com.hdu.lease.pojo.dto.UserInfoDTO;
+import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jackson
@@ -83,7 +78,7 @@ public interface UserService {
      * @param getAllUserListRequest
      * @return
      */
-    BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws ExecutionException, InterruptedException;
+    BaseGenericsResponse<UsersDTO> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws Exception;
 
     /**
      * 获取角色1 用户列表

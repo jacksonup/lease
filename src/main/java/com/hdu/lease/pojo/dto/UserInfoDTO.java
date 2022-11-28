@@ -17,6 +17,11 @@ import java.math.BigInteger;
 @ToString
 public class UserInfoDTO {
     /**
+     * 用户ID
+     */
+    private String userId;
+
+    /**
      * 用户名
      */
     private String username;

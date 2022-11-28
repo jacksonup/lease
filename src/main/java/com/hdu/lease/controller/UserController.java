@@ -1,14 +1,9 @@
 package com.hdu.lease.controller;
 
-import com.hdu.lease.pojo.dto.AuditFormDTO;
-import com.hdu.lease.pojo.dto.AuditPreviewDTO;
-import com.hdu.lease.pojo.dto.InfoDTO;
-import com.hdu.lease.pojo.dto.UserInfoDTO;
+import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
-import com.hdu.lease.service.UserService;
-import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -125,7 +120,7 @@ public class UserController {
      */
     @GetMapping("/getAllUserList")
     @ResponseBody
-    public BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws ExecutionException, InterruptedException {
+    public BaseGenericsResponse<UsersDTO> getAllUserList(GetAllUserListRequest getAllUserListRequest) throws ExecutionException, InterruptedException {
         return userService.getAllUserList(getAllUserListRequest);
     }
 

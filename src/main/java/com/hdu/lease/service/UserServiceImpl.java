@@ -19,7 +19,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +34,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jackson
@@ -297,7 +295,7 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<List<UserInfoDTO>> getAllUserList(@RequestBody GetAllUserListRequest getAllUserListRequest) throws ExecutionException, InterruptedException {
+    public BaseGenericsResponse<UsersDTO> getAllUserList(@RequestBody GetAllUserListRequest getAllUserListRequest) throws Exception {
         // 校验token
         if (!JwtUtils.verifyToken(getAllUserListRequest.getToken())) {
             log.error("token校验失败");
@@ -309,9 +307,17 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
+        // 获取用户信息列表
         List<UserContract.User> userList = usercontract.getUserList(getAllUserListRequest.getFrom()).sendAsync().get();
+        List<UserInfoDTO> userInfoDTOList = one(userList);
 
-        return BaseGenericsResponse.successBaseResp(one(userList));
+        // 获取用户总数
+        int count = usercontract.count().send().intValue();
+
+        UsersDTO usersDTO = new UsersDTO();
+        usersDTO.setCount(count);
+        usersDTO.setUserInfoDTOList(userInfoDTOList);
+        return BaseGenericsResponse.successBaseResp(usersDTO);
     }
 
     /**
@@ -458,7 +464,7 @@ public class UserServiceImpl implements UserService {
             log.error("token失效");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
-//        audit.setAuditAccount(auditAccount);
+        audit.setAuditAccount(auditAccount);
         audit.setReviewStatus(new BigInteger("3"));
         audit.setReviewReason(auditRequest.getDenyReason());
 
@@ -620,6 +626,7 @@ public class UserServiceImpl implements UserService {
         userList.forEach((user ->
         {
             UserInfoDTO userInfoDTO = new UserInfoDTO();
+            userInfoDTO.setUserId(user.getAccount());
             userInfoDTO.setRole(user.getRole());
             userInfoDTO.setUsername(user.getName());
             userInfoDTO.setAccount(user.getAccount());
