@@ -19,6 +19,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -229,7 +230,7 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "验证码错误");
         }
 
-        usercontract.modifyPasswordByAccount(baseRequest.getAccount(),
+        usercontract.modifyPasswordByAccount(user.getAccount(),
                 DigestUtils.md5DigestAsHex(baseRequest.getPassword().getBytes())).send();
 
         return BaseGenericsResponse.successBaseResp("重置成功");
