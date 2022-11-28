@@ -271,7 +271,7 @@ public class UserServiceImpl implements UserService {
                 modifyUserInfoRequest.getPhone(),
                 user.getPassword(),
                 user.getIsBindPhone(),
-                role.intValue() == 2 ? role : modifyUserInfoRequest.getRole(),
+                role.intValue() == 2 && user.getAccount().equals(account) ? role : modifyUserInfoRequest.getRole(),
                 user.getStatus()
         );
 
@@ -523,7 +523,7 @@ public class UserServiceImpl implements UserService {
             log.error("token失效");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
-//        audit.setAuditAccount(auditAccount);
+        audit.setAuditAccount(auditAccount);
         audit.setReviewStatus(new BigInteger("3"));
         audit.setReviewReason("审批通过");
 

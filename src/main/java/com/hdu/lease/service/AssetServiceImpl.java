@@ -63,6 +63,8 @@ public class AssetServiceImpl implements AssetService {
 
     private UserContract userContract;
 
+    private PlaceContract placeContract;
+
     private AssetContract assertContract;
 
     private PlaceAssetContract placeAssetContract;
@@ -88,6 +90,7 @@ public class AssetServiceImpl implements AssetService {
 
         // 取合约地址
         Contract userContractEntity = contractMapper.selectById(1);
+        Contract placeContractEntity = contractMapper.selectById(2);
         Contract assetContractEntity = contractMapper.selectById(3);
         Contract placeAssetContractEntity = contractMapper.selectById(4);
         Contract assetDetailContractEntity = contractMapper.selectById(5);
@@ -95,6 +98,7 @@ public class AssetServiceImpl implements AssetService {
 
         // 加载合约
         userContract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
+        placeContract = PlaceContract.load(placeContractEntity.getContractAddress(), web3j, credentials, provider);
         assertContract = AssetContract.load(assetContractEntity.getContractAddress(), web3j, credentials, provider);
         placeAssetContract = PlaceAssetContract.load(
                 placeAssetContractEntity.getContractAddress(),
@@ -373,8 +377,15 @@ public class AssetServiceImpl implements AssetService {
         // 判断是否处在借用状态
         if (assetDetail.getCurrentStatus().intValue() == 1) {
             // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】【placeId】
+            scannedAssetDTO.setExpiredTime(assetDetail.getEndTime());
 
-//            scannedAssetDTO.setExpiredTime();
+            // 获取place信息
+            PlaceContract.Place place = placeContract.getPlaceInfo().send();
+            scannedAssetDTO.setPlace(place.getPlaceName());
+
+            // 获取user信息
+
+
         }
 
         return BaseGenericsResponse.successBaseResp(scannedAssetDTO);
