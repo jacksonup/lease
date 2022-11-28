@@ -279,11 +279,7 @@ public class AssetServiceImpl implements AssetService {
                     fileName;
             log.info("上传路径为：{}", url);
             log.info("上传成功");
-
-            // 保存url
-            assertContract.modifyPictureUrl(assetId, url).send();
-
-            return BaseGenericsResponse.successBaseResp("上传成功");
+            return BaseGenericsResponse.successBaseResp(url);
         } catch (IOException e) {
             e.printStackTrace();
             log.error("上传失败");

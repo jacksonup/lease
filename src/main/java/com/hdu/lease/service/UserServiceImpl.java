@@ -173,13 +173,13 @@ public class UserServiceImpl implements UserService {
             log.error("token校验失败");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token校验失败");
         }
+
         // 取出account
         String account = JwtUtils.getTokenInfo(baseRequest.getToken()).getClaim("account").asString();
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(account))) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
-
 
         // 校验验证码是否正确
         if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
