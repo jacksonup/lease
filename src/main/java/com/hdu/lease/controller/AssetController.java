@@ -49,7 +49,7 @@ public class AssetController {
 
     @PostMapping("/uploadPic")
     @ResponseBody
-    public BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) throws Exception {
+    public BaseGenericsResponse<String> uploadPic(@RequestParam("file") MultipartFile picture,String token, String assetId) throws Exception {
         return assetService.uploadPic(token, picture, assetId);
     }
 
