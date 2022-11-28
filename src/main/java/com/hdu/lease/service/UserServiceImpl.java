@@ -222,8 +222,10 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token已失效，请重新登录");
         }
 
+        UserContract.User user = usercontract.getUserInfo(account).send();
+
         // 校验验证码是否正确
-        if (!Objects.equals(redisTemplate.opsForValue().get(baseRequest.getPhone()), baseRequest.getCode())) {
+        if (!Objects.equals(redisTemplate.opsForValue().get(user.getPhone()), baseRequest.getCode())) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "验证码错误");
         }
 
@@ -542,16 +544,19 @@ public class UserServiceImpl implements UserService {
         auditFormDTO.setStatus(status);
 
         // 获取审批者姓名
-//        UserContract.User auditUser = usercontract.getUserInfo(audit.getAuditAccount()).send();
-//        auditFormDTO.setApplyName(auditUser.getName());
+        UserContract.User auditUser = usercontract.getUserInfo(audit.getAuditAccount()).send();
+        auditFormDTO.setApplyName(auditUser.getName());
 
+        // 获取借用者姓名
         UserContract.User applyUser = usercontract.getUserInfo(audit.getBorrowerAccount()).send();
         auditFormDTO.setApplyName(applyUser.getName());
         auditFormDTO.setApplyNum(applyUser.getAccount());
         auditFormDTO.setAssetCount(audit.getCount().intValue());
-//        AssetContract.Asset asset = assertContract.getById(audit.getAssetId()).send();
-//        auditFormDTO.setAssetName(asset.getAssetName());
-//        auditFormDTO.setAssetValue(asset.getPrice().doubleValue());
+
+        // 获取资产信息
+        AssetContract.Asset asset = assertContract.getById(audit.getAssetId()).send();
+        auditFormDTO.setAssetName(asset.getAssetName());
+        auditFormDTO.setAssetValue(asset.getPrice().doubleValue());
 
         auditFormDTO.setTimeRange(audit.getBeginTime() + " ~ " + audit.getEndTime());
         auditFormDTO.setApplyReason(audit.getBorrowReason());

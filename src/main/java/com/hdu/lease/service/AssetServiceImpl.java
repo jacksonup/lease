@@ -130,10 +130,14 @@ public class AssetServiceImpl implements AssetService {
                 // 生产资产明细
                 // TODO 修改数据结构后，增加相应字段
                 for (int j = 0; j < count; j++) {
+                    String blankStr = "";
                     AssetDetailContract.AssetDetail assetDetail = new AssetDetailContract.AssetDetail(
                             UuidUtils.createUuid(),
-                            "",
+                            blankStr,
                             assetId,
+                            placeId,
+                            blankStr,
+                            blankStr,
                             new BigInteger("0"),
                             new BigInteger("0")
                     );
@@ -209,9 +213,6 @@ public class AssetServiceImpl implements AssetService {
         if (!userService.judgeRole(token, 1)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
         }
-
-
-
         return null;
     }
 
@@ -220,7 +221,6 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<String> uploadPic(String token, MultipartFile picture, String assetId) {
-
         return null;
     }
 
@@ -243,6 +243,7 @@ public class AssetServiceImpl implements AssetService {
                 assetApplyRequest.getTo(),
                 assetApplyRequest.getReason(),
                 BigInteger.valueOf(assetApplyRequest.getCount()),
+                blankStr,
                 new BigInteger("1"),
                 blankStr,
                 blankStr
@@ -280,7 +281,7 @@ public class AssetServiceImpl implements AssetService {
     public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) throws Exception {
         log.info("正在扫码获取物资信息...");
         // 判断物资是否被借用
-        AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getAssetDetailByAssetDetailId(assetId).send();
+        AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(assetId).send();
         if (ObjectUtils.isEmpty(assetDetail)) {
             log.info("此物资已销毁");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"此物资已销毁");
