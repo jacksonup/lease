@@ -31,13 +31,12 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 资产服务实现类
@@ -276,11 +275,10 @@ public class AssetServiceImpl implements AssetService {
             // 关闭ossClient
             ossClient.shutdown();
 
-            // 返回url路径
-            String url = " https://" +
-                    ossProperties.getBucketName() + "." +
-                    ossProperties.getEndpoint() + "/" +
-                    fileName;
+            // 设置URL过期时间为...
+            Date expiration = new Date(System.currentTimeMillis() + 3600L * 10000000);
+            String url = ossClient.generatePresignedUrl(ossProperties.getBucketName(), fileName, expiration).toString();
+
             log.info("上传路径为：{}", url);
             log.info("上传成功");
             return BaseGenericsResponse.successBaseResp(url);

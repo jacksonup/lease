@@ -295,6 +295,7 @@ public class PlaceContract extends Contract {
         }
     }
 
+    @Getter
     public static class DeleteMsgEventResponse extends BaseEventResponse {
         public BigInteger code;
     }
