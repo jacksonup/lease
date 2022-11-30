@@ -16,16 +16,17 @@ import java.util.List;
 @Setter
 @ToString
 public class AssetDTO {
+    private String assetId;
 
     private String picUrl;
 
     private String name;
 
-    private int rest;
+    private Integer rest;
 
     private Boolean apply;
 
     private List<String> placeList;
 
-    private int value;
+    private Integer value;
 }

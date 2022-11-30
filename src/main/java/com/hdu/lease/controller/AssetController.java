@@ -1,19 +1,20 @@
 package com.hdu.lease.controller;
 
-import com.hdu.lease.pojo.dto.AssetDTO;
-import com.hdu.lease.pojo.dto.PlaceDTO;
-import com.hdu.lease.pojo.dto.ScannedAssetDTO;
+import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.request.AssetApplyRequest;
 import com.hdu.lease.pojo.request.AssetBorrowRequest;
 import com.hdu.lease.pojo.request.CreateAssertRequest;
+import com.hdu.lease.pojo.request.EditAssetRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.service.AssetService;
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 资产控制器
@@ -31,8 +32,14 @@ public class AssetController {
 
     @PostMapping("/create")
     @ResponseBody
-    public BaseGenericsResponse<String> create(CreateAssertRequest createAssertRequest) throws Exception {
+    public BaseGenericsResponse<Map<String, List<String>>> create(CreateAssertRequest createAssertRequest) throws Exception {
         return assetService.create(createAssertRequest);
+    }
+
+    @GetMapping("/info")
+    @ResponseBody
+    public BaseGenericsResponse<AssetInfoDTO> info(String token, String assetId) throws Exception {
+        return assetService.info(token, assetId);
     }
 
     @GetMapping("/getList")
@@ -70,4 +77,20 @@ public class AssetController {
     public BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) throws Exception {
         return assetService.scanned(token, assetId);
     }
+
+    @PostMapping("/edit")
+    @ResponseBody
+    public BaseGenericsResponse<String> edit(EditAssetRequest editAssetRequest) throws Exception {
+        return assetService.edit(editAssetRequest);
+    }
+
+    @GetMapping("/all")
+    @ResponseBody
+    public BaseGenericsResponse<List<AssetsDTO>> all(String token) throws Exception {
+        return assetService.all(token);
+    }
+
+//    @GetMapping("/details")
+//    @ResponseBody
+//    public BaseGenericsResponse<>
 }

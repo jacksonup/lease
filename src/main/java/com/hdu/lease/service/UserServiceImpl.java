@@ -400,6 +400,30 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 判断多角色
+     *
+     * @param token
+     * @param roleIds
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Boolean judgeRoles(String token, int...roleIds) throws Exception {
+        String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
+        UserContract.User user = usercontract.getUserInfo(account).send();
+        if (user == null) {
+            return false;
+        }
+
+        for (int i = 0; i < roleIds.length; i++) {
+            if (user.getRole().intValue() == roleIds[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

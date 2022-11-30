@@ -1,14 +1,18 @@
 package com.hdu.lease.service;
 
 import com.hdu.lease.pojo.dto.AssetDTO;
+import com.hdu.lease.pojo.dto.AssetInfoDTO;
+import com.hdu.lease.pojo.dto.AssetsDTO;
 import com.hdu.lease.pojo.dto.ScannedAssetDTO;
 import com.hdu.lease.pojo.request.AssetApplyRequest;
 import com.hdu.lease.pojo.request.AssetBorrowRequest;
 import com.hdu.lease.pojo.request.CreateAssertRequest;
+import com.hdu.lease.pojo.request.EditAssetRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 资产接口
@@ -24,7 +28,7 @@ public interface AssetService {
      * @param createAssertRequest
      * @return
      */
-    BaseGenericsResponse<String> create(CreateAssertRequest createAssertRequest) throws Exception;
+    BaseGenericsResponse<Map<String, List<String>>> create(CreateAssertRequest createAssertRequest) throws Exception;
 
     /**
      * 获取指定资产信息
@@ -78,4 +82,30 @@ public interface AssetService {
      * @return
      */
     BaseGenericsResponse<ScannedAssetDTO> scanned(String token, String assetId) throws Exception;
+
+    /**
+     * 编辑物资信息
+     *
+     * @param editAssetRequest
+     * @return
+     */
+    BaseGenericsResponse<String> edit(EditAssetRequest editAssetRequest) throws Exception;
+
+    /**
+     * 获取所有物资
+     *
+     * @param token
+     * @return
+     */
+    BaseGenericsResponse<List<AssetsDTO>> all(String token) throws Exception;
+
+    /**
+     * 获取指定物资信息
+     *
+     * @param token
+     * @param assetId
+     * @return
+     * @throws Exception
+     */
+    BaseGenericsResponse<AssetInfoDTO> info(String token, String assetId) throws Exception;
 }

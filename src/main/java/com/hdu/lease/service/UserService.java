@@ -105,13 +105,24 @@ public interface UserService {
     BaseGenericsResponse<String> logout(BaseRequest baseRequest);
 
     /**
-     * 判断是否是角色二
+     * 判断角色
      *
      * @param token
+     * @param roleId
      * @return
      * @throws Exception
      */
     Boolean judgeRole(String token, int roleId) throws Exception;
+
+    /**
+     * 判断多角色
+     *
+     * @param token
+     * @param roleIds
+     * @return
+     * @throws Exception
+     */
+    Boolean judgeRoles(String token, int...roleIds) throws Exception;
 
     /**
      * 导入用户
