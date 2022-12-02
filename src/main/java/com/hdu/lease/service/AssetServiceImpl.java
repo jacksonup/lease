@@ -4,15 +4,9 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
-import com.hdu.lease.pojo.dto.AssetDTO;
-import com.hdu.lease.pojo.dto.AssetInfoDTO;
-import com.hdu.lease.pojo.dto.AssetsDTO;
-import com.hdu.lease.pojo.dto.ScannedAssetDTO;
+import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
-import com.hdu.lease.pojo.request.AssetApplyRequest;
-import com.hdu.lease.pojo.request.AssetBorrowRequest;
-import com.hdu.lease.pojo.request.CreateAssertRequest;
-import com.hdu.lease.pojo.request.EditAssetRequest;
+import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
@@ -519,6 +513,23 @@ public class AssetServiceImpl implements AssetService {
         assetInfoDTO.setApply(asset.getIsApply());
 
         return BaseGenericsResponse.successBaseResp(assetInfoDTO);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> updateStatus(UpdateStatusRequest updateStatusRequest) {
+        
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<DetailsDTO> details(DetailsRequest detailsRequest) throws Exception {
+        return null;
     }
 
     /**

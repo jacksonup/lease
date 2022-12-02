@@ -4,6 +4,7 @@ import com.hdu.lease.contract.PlaceAssetContract;
 import com.hdu.lease.contract.PlaceContract;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
+import com.hdu.lease.pojo.dto.OnePlaceDTO;
 import com.hdu.lease.pojo.dto.PlaceDTO;
 import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.request.CreatePlaceRequest;
@@ -16,6 +17,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteFunctionCall;
@@ -43,6 +45,9 @@ public class PlaceServiceImpl implements PlaceService{
 
     @Setter(onMethod_ = @Autowired)
     private ContractMapper contractMapper;
+
+    @Setter(onMethod_ = @Autowired)
+    private UserService userService;
 
     private PlaceContract placeContract;
 
@@ -155,5 +160,35 @@ public class PlaceServiceImpl implements PlaceService{
         });
 
         return BaseGenericsResponse.successBaseResp(placeDTOList);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<OnePlaceDTO>> onePlaces(String token) throws Exception {
+        // 判断权限
+        if (!userService.judgeRole(token, 1)) {
+            log.error("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
+        List<PlaceContract.Place> placeList = placeContract.getListByPlaceManagerAccount(account).send();
+        List<OnePlaceDTO> onePlaceDTOList = new ArrayList<>();
+
+        if (CollectionUtils.isEmpty(placeList) || placeList.size() == 0) {
+            log.info("该用户未有管理自提点");
+            return BaseGenericsResponse.successBaseResp(onePlaceDTOList);
+        }
+
+        for (PlaceContract.Place place : placeList) {
+            OnePlaceDTO onePlaceDTO = new OnePlaceDTO();
+            onePlaceDTO.setPlaceId(place.getPlaceId());
+            onePlaceDTO.setName(place.getPlaceName());
+            onePlaceDTOList.add(onePlaceDTO);
+        }
+
+        return BaseGenericsResponse.successBaseResp(onePlaceDTOList);
     }
 }

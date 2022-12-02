@@ -1,10 +1,7 @@
 package com.hdu.lease.controller;
 
 import com.hdu.lease.pojo.dto.*;
-import com.hdu.lease.pojo.request.AssetApplyRequest;
-import com.hdu.lease.pojo.request.AssetBorrowRequest;
-import com.hdu.lease.pojo.request.CreateAssertRequest;
-import com.hdu.lease.pojo.request.EditAssetRequest;
+import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.service.AssetService;
 import lombok.Getter;
@@ -90,7 +87,15 @@ public class AssetController {
         return assetService.all(token);
     }
 
-//    @GetMapping("/details")
-//    @ResponseBody
-//    public BaseGenericsResponse<>
+    @GetMapping("/details")
+    @ResponseBody
+    public BaseGenericsResponse<DetailsDTO> details(DetailsRequest detailsRequest) throws Exception {
+        return assetService.details(detailsRequest);
+    }
+
+    @PostMapping("/updateStatus")
+    @ResponseBody
+    public BaseGenericsResponse<String> updateStatus(UpdateStatusRequest updateStatusRequest) throws Exception{
+        return assetService.updateStatus(updateStatusRequest);
+    }
 }

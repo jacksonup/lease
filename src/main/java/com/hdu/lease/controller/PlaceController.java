@@ -1,10 +1,12 @@
 package com.hdu.lease.controller;
 
+import com.hdu.lease.pojo.dto.OnePlaceDTO;
 import com.hdu.lease.pojo.dto.PlaceDTO;
 import com.hdu.lease.pojo.request.CreatePlaceRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.service.PlaceService;
 import com.hdu.lease.service.PlaceServiceImpl;
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -61,5 +63,11 @@ public class PlaceController {
     @ResponseBody
     public BaseGenericsResponse<List<PlaceDTO>> getAllPlaceList(String token) throws Exception {
         return placeService.getAllPlaceList(token);
+    }
+
+    @GetMapping("/onePlaces")
+    @ResponseBody
+    public BaseGenericsResponse<List<OnePlaceDTO>> onePlaces(String token) throws Exception {
+        return placeService.onePlaces(token);
     }
 }

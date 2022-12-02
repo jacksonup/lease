@@ -1,5 +1,6 @@
 package com.hdu.lease.service;
 
+import com.hdu.lease.pojo.dto.OnePlaceDTO;
 import com.hdu.lease.pojo.dto.PlaceDTO;
 import com.hdu.lease.pojo.request.CreatePlaceRequest;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
@@ -19,6 +20,7 @@ public interface PlaceService {
      *
      * @param createPlaceRequest
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> createPlace(CreatePlaceRequest createPlaceRequest) throws Exception;
 
@@ -28,6 +30,7 @@ public interface PlaceService {
      * @param token
      * @param placeId
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<String> deletePlace(String token, String placeId) throws Exception;
 
@@ -36,6 +39,16 @@ public interface PlaceService {
      *
      * @param token
      * @return
+     * @throws Exception
      */
     BaseGenericsResponse<List<PlaceDTO>> getAllPlaceList(String token) throws Exception;
+
+    /**
+     * 获取指定仓库列表
+     *
+     * @param token
+     * @return
+     * @throws Exception
+     */
+    BaseGenericsResponse<List<OnePlaceDTO>> onePlaces(String token) throws Exception;
 }

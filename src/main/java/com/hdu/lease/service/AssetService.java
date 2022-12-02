@@ -1,13 +1,7 @@
 package com.hdu.lease.service;
 
-import com.hdu.lease.pojo.dto.AssetDTO;
-import com.hdu.lease.pojo.dto.AssetInfoDTO;
-import com.hdu.lease.pojo.dto.AssetsDTO;
-import com.hdu.lease.pojo.dto.ScannedAssetDTO;
-import com.hdu.lease.pojo.request.AssetApplyRequest;
-import com.hdu.lease.pojo.request.AssetBorrowRequest;
-import com.hdu.lease.pojo.request.CreateAssertRequest;
-import com.hdu.lease.pojo.request.EditAssetRequest;
+import com.hdu.lease.pojo.dto.*;
+import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -108,4 +102,22 @@ public interface AssetService {
      * @throws Exception
      */
     BaseGenericsResponse<AssetInfoDTO> info(String token, String assetId) throws Exception;
+
+    /**
+     * 手动修改明细物资状态
+     *
+     * @param updateStatusRequest
+     * @return
+     * @throws Exception
+     */
+    BaseGenericsResponse<String> updateStatus(UpdateStatusRequest updateStatusRequest) throws Exception;
+
+    /**
+     * 分页获取指定明细物资列表
+     *
+     * @param detailsRequest
+     * @return
+     * @throws Exception
+     */
+    BaseGenericsResponse<DetailsDTO> details(DetailsRequest detailsRequest) throws Exception;
 }

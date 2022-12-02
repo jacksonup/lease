@@ -201,4 +201,22 @@ public interface UserService {
      * @return
      */
     BaseGenericsResponse<String> readAll(String token, List<Long> infoIds);
+
+    /**
+     * 获取指定仓库管理员
+     *
+     * @param token
+     * @param placeId
+     * @return
+     */
+    BaseGenericsResponse<String> getPlaceManager(String token, String placeId);
+
+    /**
+     * 获取角色0角色1用户列表
+     *
+     * @param token
+     * @param from
+     * @return
+     */
+    BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from);
 }

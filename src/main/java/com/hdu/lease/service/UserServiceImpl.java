@@ -656,6 +656,14 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) {
+        return null;
+    }
+
+    /**
      * User -> UserInfoDTO list
      *
      * @return

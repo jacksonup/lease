@@ -244,4 +244,14 @@ public class UserController {
     public BaseGenericsResponse<String> readAll(String token, List<Long> infoIds) {
         return userService.readAll(token, infoIds);
     }
+
+    @GetMapping("/getPlaceManager")
+    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) {
+        return userService.getPlaceManager(token, placeId);
+    }
+
+    @GetMapping("/getNoRole2s")
+    public BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) {
+        return userService.getNoRole2s(token, from);
+    }
 }
