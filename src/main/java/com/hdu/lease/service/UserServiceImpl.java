@@ -2,6 +2,7 @@ package com.hdu.lease.service;
 
 import com.hdu.lease.contract.AssetContract;
 import com.hdu.lease.contract.AuditContract;
+import com.hdu.lease.contract.PlaceContract;
 import com.hdu.lease.contract.UserContract;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
@@ -20,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +36,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Jackson
@@ -54,6 +58,8 @@ public class UserServiceImpl implements UserService {
     private ContractMapper contractMapper;
 
     private UserContract usercontract;
+
+    private PlaceContract placeContract;
 
     private AssetContract assertContract;
 
@@ -76,11 +82,13 @@ public class UserServiceImpl implements UserService {
 
         // 取合约地址
         Contract userContractEntity = contractMapper.selectById(1);
+        Contract placeContractEntity = contractMapper.selectById(2);
         Contract assetContractEntity = contractMapper.selectById(3);
         Contract auditContractEntity = contractMapper.selectById(6);
 
         // 加载合约
         usercontract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
+        placeContract = PlaceContract.load(placeContractEntity.getContractAddress(), web3j, credentials, provider);
         assertContract = AssetContract.load(assetContractEntity.getContractAddress(), web3j, credentials, provider);
         auditContract = AuditContract.load(
                 auditContractEntity.getContractAddress(),
@@ -659,8 +667,55 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) {
-        return null;
+    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) throws Exception{
+        // 校验权限
+        if (!judgeRole(token, 2)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        return BaseGenericsResponse.successBaseResp(
+                placeContract.getById(placeId).send().getPlaceName());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) throws Exception {
+        if (!judgeRole(token, 2)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        List<BigInteger> list = Stream.of(
+                new BigInteger("0"),
+                new BigInteger("1")).collect(Collectors.toList());
+        int end = from + 9;
+
+        List<UserContract.User> userList = usercontract.getListByRoleIdPage(list,
+                new BigInteger(String.valueOf(from.intValue())),
+                new BigInteger(String.valueOf(end))).send();
+
+        GetNoRoleUsersDTO getNoRoleUsersDTO = new GetNoRoleUsersDTO();
+        List<GetNoRoleUserInfoDTO> getNoRoleUserInfoDTOList = new ArrayList<>();
+
+        if (CollectionUtils.isEmpty(userList)) {
+            getNoRoleUsersDTO.setCount(0);
+            getNoRoleUsersDTO.setGetNoRoleUserInfoDTOList(getNoRoleUserInfoDTOList);
+            return BaseGenericsResponse.successBaseResp(getNoRoleUsersDTO);
+        }
+
+        getNoRoleUsersDTO.setCount(userList.size());
+
+        for (UserContract.User user : userList) {
+            GetNoRoleUserInfoDTO getNoRoleUserInfoDTO = new GetNoRoleUserInfoDTO();
+            getNoRoleUserInfoDTO.setRole(user.getRole());
+            getNoRoleUserInfoDTO.setAccount(user.getAccount());
+            getNoRoleUserInfoDTO.setName(user.getName());
+            getNoRoleUserInfoDTO.setPhone(user.getPhone());
+            getNoRoleUserInfoDTOList.add(getNoRoleUserInfoDTO);
+        }
+
+        return BaseGenericsResponse.successBaseResp(getNoRoleUsersDTO);
     }
 
     /**

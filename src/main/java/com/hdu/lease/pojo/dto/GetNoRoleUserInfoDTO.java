@@ -1,6 +1,7 @@
 package com.hdu.lease.pojo.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigInteger;
@@ -12,6 +13,7 @@ import java.math.BigInteger;
  * @date 2022/12/2
  */
 @Getter
+@Setter
 @ToString
 public class GetNoRoleUserInfoDTO {
     /**

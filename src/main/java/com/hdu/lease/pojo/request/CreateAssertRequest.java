@@ -41,4 +41,9 @@ public class CreateAssertRequest {
      * 自提点列表
      */
     private List<Map<String, Integer>> placeList;
+
+    /**
+     * 总量
+     */
+    private Integer count;
 }

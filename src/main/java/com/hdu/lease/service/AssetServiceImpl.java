@@ -126,6 +126,16 @@ public class AssetServiceImpl implements AssetService {
         // 生成资产唯一标识
         String assetId = UuidUtils.createUuid();
 
+        // 校验assetName是否重复
+        BigInteger userCount = userContract.count().send();
+
+        List<UserContract.User> userList = userContract.getAllList().send();
+        for (UserContract.User user : userList) {
+            if (user.getName().equals(createAssertRequest.getName())) {
+                return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "物资名重复");
+            }
+        }
+
         // 绑定自提点资产,生成List<PlaceAsset>
         List<PlaceAssetContract.PlaceAsset> placeAssetList = new ArrayList<>();
         List<Map<String, Integer>> list = createAssertRequest.getPlaceList();
@@ -179,6 +189,14 @@ public class AssetServiceImpl implements AssetService {
 
         placeAssetContract.bindAsset(placeAssetList).send();
 
+        // 创建未分配自提点的物资
+//        int assetCount = createAssertRequest.getCount();
+//        if (assetCount > sum) {
+//            for (int i = 0; i < assetCount - sum; i++) {
+//
+//            }
+//        }
+
         // 创建资产
         // 是否需要借用审核、需要改数据类型、
         AssetContract.Asset asset = new AssetContract.Asset(
@@ -187,7 +205,7 @@ public class AssetServiceImpl implements AssetService {
                 createAssertRequest.getApply(),
                 createAssertRequest.getPicUrl(),
                 new BigInteger(String.valueOf(createAssertRequest.getValue())),
-                new BigInteger(String.valueOf(count)),
+                new BigInteger(String.valueOf(createAssertRequest.getCount())),
                 new BigInteger("0")
         );
 
@@ -213,7 +231,9 @@ public class AssetServiceImpl implements AssetService {
 
         for (int i = 0; i < assetList.size(); i++) {
             // 获取可用余量
-            List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("0")).send();
+            List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(placeId,
+                    assetList.get(i).getAssetId(),
+                    new BigInteger("0")).send();
             AssetDTO assetDTO = one(assetList.get(i));
             assetDTO.setRest(assetDetailList.size());
 
@@ -529,6 +549,38 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<DetailsDTO> details(DetailsRequest detailsRequest) throws Exception {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void supply(SupplyRequest supplyRequest) throws Exception {}
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<CanGroundingDTO>> canGrounding(String token) throws Exception {
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> grounding(ShelfOperateRequest shelfOperateRequest) throws Exception {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> undercarriage(ShelfOperateRequest shelfOperateRequest) throws Exception {
         return null;
     }
 

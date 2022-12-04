@@ -208,15 +208,17 @@ public interface UserService {
      * @param token
      * @param placeId
      * @return
+     * @throws Exception
      */
-    BaseGenericsResponse<String> getPlaceManager(String token, String placeId);
+    BaseGenericsResponse<String> getPlaceManager(String token, String placeId) throws Exception;
 
     /**
-     * 获取角色0角色1用户列表
+     * 获取角色0 角色1 用户列表
      *
      * @param token
      * @param from
      * @return
+     * @throws Exception 异常
      */
-    BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from);
+    BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) throws Exception;
 }

@@ -246,12 +246,12 @@ public class UserController {
     }
 
     @GetMapping("/getPlaceManager")
-    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) {
+    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) throws Exception {
         return userService.getPlaceManager(token, placeId);
     }
 
     @GetMapping("/getNoRole2s")
-    public BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) {
+    public BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) throws Exception{
         return userService.getNoRole2s(token, from);
     }
 }
