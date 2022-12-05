@@ -191,14 +191,6 @@ public class AssetServiceImpl implements AssetService {
 
         placeAssetContract.bindAsset(placeAssetList).send();
 
-        // 创建未分配自提点的物资
-//        int assetCount = createAssertRequest.getCount();
-//        if (assetCount > sum) {
-//            for (int i = 0; i < assetCount - sum; i++) {
-//
-//            }
-//        }
-
         // 创建资产
         // 是否需要借用审核、需要改数据类型、
         AssetContract.Asset asset = new AssetContract.Asset(
