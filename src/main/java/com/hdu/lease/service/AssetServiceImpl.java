@@ -36,6 +36,8 @@ import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 资产服务实现类
@@ -564,8 +566,44 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<List<CanGroundingDTO>> canGrounding(String token) throws Exception {
+        // 判断权限
+        if (!userService.judgeRole(token, 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+        }
 
-        return null;
+        List<BigInteger> list =Stream.of(new BigInteger("0"), new BigInteger("5")).collect(Collectors.toList());
+
+        // 获取空闲及下架物资
+        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatusAndPlaceId(list, "").send();
+        HashMap<String, Integer> map = new HashMap<>(6);
+
+        for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            String assetId = assetDetail.getAssetId();
+            // 统计count
+            if (map.containsKey(assetDetail.getAssetId())) {
+                map.put(assetId, map.get(assetId) + 1);
+            } else {
+                map.put(assetDetail.getAssetId(), 1);
+            }
+        }
+
+        List<CanGroundingDTO> canGroundingDTOList = new ArrayList<>(6);
+
+        // 根据assetId获取物资
+        for (String key : map.keySet()) {
+            CanGroundingDTO canGroundingDTO = new CanGroundingDTO();
+            AssetContract.Asset asset = assertContract.getById(key).send();
+            if (!ObjectUtils.isEmpty(asset)) {
+                canGroundingDTO.setAssetId(asset.getAssetId());
+                canGroundingDTO.setName(asset.getAssetName());
+                canGroundingDTO.setPicUrl(asset.getPicUrl());
+                canGroundingDTO.setCount(map.get(key));
+                canGroundingDTOList.add(canGroundingDTO);
+            }
+        }
+
+        return BaseGenericsResponse.successBaseResp(canGroundingDTOList);
     }
 
     /**
@@ -573,7 +611,56 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<String> grounding(ShelfOperateRequest shelfOperateRequest) throws Exception {
-        return null;
+        // 判断权限
+        if (!userService.judgeRole(shelfOperateRequest.getToken(), 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+        }
+
+        // 获取指定物资的空闲状态的明细物资
+        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(shelfOperateRequest.getAssetId(), new BigInteger("0")).send();
+
+        if (CollectionUtils.isEmpty(assetDetailList) && assetDetailList.size() == 0) {
+            log.info("空闲状态的明细物资列表为空");
+        } else {
+            // 更新placeId
+            for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+                AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                        assetDetail.getAssetDetailId(),
+                        assetDetail.getCurrentUserAccount(),
+                        assetDetail.getAssetId(),
+                        shelfOperateRequest.getPlaceId(),
+                        assetDetail.getBeginTime(),
+                        assetDetail.getEndTime(),
+                        new BigInteger("0"),
+                        assetDetail.getStatus()
+                );
+                assetDetailContract.update(newAssetDetail).send();
+            }
+        }
+
+        assetDetailList = assetDetailContract.getListByStatus(shelfOperateRequest.getAssetId(), new BigInteger("5")).send();
+
+        if (CollectionUtils.isEmpty(assetDetailList) && assetDetailList.size() == 0) {
+            log.info("下架状态的明细物资列表为空");
+        } else {
+            // 更新placeId
+            for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+                AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                        assetDetail.getAssetDetailId(),
+                        assetDetail.getCurrentUserAccount(),
+                        assetDetail.getAssetId(),
+                        shelfOperateRequest.getPlaceId(),
+                        assetDetail.getBeginTime(),
+                        assetDetail.getEndTime(),
+                        new BigInteger("5"),
+                        assetDetail.getStatus()
+                );
+                assetDetailContract.update(newAssetDetail).send();
+            }
+        }
+
+        return BaseGenericsResponse.successBaseResp("上架成功");
     }
 
     /**
@@ -581,6 +668,20 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<String> undercarriage(ShelfOperateRequest shelfOperateRequest) throws Exception {
+        // 判断权限
+        if (!userService.judgeRole(shelfOperateRequest.getToken(), 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+        }
+
+        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getList(shelfOperateRequest.getAssetId()).send();
+
+
+        for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            // 校验状态
+
+        }
+
         return null;
     }
 

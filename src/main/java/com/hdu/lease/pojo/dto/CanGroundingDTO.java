@@ -1,6 +1,7 @@
 package com.hdu.lease.pojo.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -10,13 +11,14 @@ import lombok.ToString;
  * @date 2022/12/3
  */
 @Getter
+@Setter
 @ToString
 public class CanGroundingDTO {
     private String name;
 
     private String picUrl;
 
-    private String count;
+    private Integer count;
 
     private String assetId;
 }
