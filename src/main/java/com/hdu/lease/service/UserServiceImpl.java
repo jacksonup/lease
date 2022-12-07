@@ -715,6 +715,8 @@ public class UserServiceImpl implements UserService {
             getNoRoleUserInfoDTOList.add(getNoRoleUserInfoDTO);
         }
 
+        getNoRoleUsersDTO.setGetNoRoleUserInfoDTOList(getNoRoleUserInfoDTOList);
+
         return BaseGenericsResponse.successBaseResp(getNoRoleUsersDTO);
     }
 

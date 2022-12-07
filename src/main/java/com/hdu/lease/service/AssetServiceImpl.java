@@ -668,10 +668,13 @@ public class AssetServiceImpl implements AssetService {
 
         List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getList(shelfOperateRequest.getAssetId()).send();
 
-
+        // 初始化set
+        Set<Integer> set = Stream.of(0, 3, 4).collect(Collectors.toCollection(HashSet::new));
         for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
             // 校验状态
-
+            if (!set.contains(assetDetail.getCurrentStatus().intValue())) {
+                return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "下架失败,存在明细物资不符合下架状态");
+            }
         }
 
         return null;
