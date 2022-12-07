@@ -210,7 +210,7 @@ public interface UserService {
      * @return
      * @throws Exception
      */
-    BaseGenericsResponse<String> getPlaceManager(String token, String placeId) throws Exception;
+    BaseGenericsResponse<PlaceManagerDTO> getPlaceManager(String token, String placeId) throws Exception;
 
     /**
      * 获取角色0 角色1 用户列表

@@ -650,6 +650,8 @@ public class AssetServiceImpl implements AssetService {
                 );
                 assetDetailContract.update(newAssetDetail).send();
             }
+
+            // 插入绑定物资信息
         }
 
         return BaseGenericsResponse.successBaseResp("上架成功");
@@ -676,6 +678,23 @@ public class AssetServiceImpl implements AssetService {
                 return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "下架失败,存在明细物资不符合下架状态");
             }
         }
+
+        // 清除绑定关系
+        String blankStr = "";
+        for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                    assetDetail.getAssetDetailId(),
+                    blankStr,
+                    assetDetail.getAssetId(),
+                    blankStr,
+                    blankStr,
+                    blankStr,
+                    new BigInteger("5"),
+                    new BigInteger("0")
+            );
+            assetDetailContract.update(assetDetail).send();
+        }
+
 
         return null;
     }

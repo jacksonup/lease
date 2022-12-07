@@ -667,14 +667,20 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) throws Exception{
+    public BaseGenericsResponse<PlaceManagerDTO> getPlaceManager(String token, String placeId) throws Exception{
         // 校验权限
         if (!judgeRole(token, 2)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
-        return BaseGenericsResponse.successBaseResp(
-                placeContract.getById(placeId).send().getPlaceName());
+        PlaceManagerDTO placeManagerDTO = new PlaceManagerDTO();
+        PlaceContract.Place place = placeContract.getById(placeId).send();
+        placeManagerDTO.setAccount(place.getPlaceManagerAccount());
+
+        UserContract.User user = usercontract.getUserInfo(place.getPlaceManagerAccount()).send();
+        placeManagerDTO.setUsername(user.getName());
+
+        return BaseGenericsResponse.successBaseResp(placeManagerDTO);
     }
 
     /**
@@ -698,13 +704,14 @@ public class UserServiceImpl implements UserService {
         GetNoRoleUsersDTO getNoRoleUsersDTO = new GetNoRoleUsersDTO();
         List<GetNoRoleUserInfoDTO> getNoRoleUserInfoDTOList = new ArrayList<>();
 
+        // 获取所有用户总数
+        getNoRoleUsersDTO.setCount(usercontract.count().send().intValue());
+
         if (CollectionUtils.isEmpty(userList)) {
-            getNoRoleUsersDTO.setCount(0);
             getNoRoleUsersDTO.setGetNoRoleUserInfoDTOList(getNoRoleUserInfoDTOList);
             return BaseGenericsResponse.successBaseResp(getNoRoleUsersDTO);
         }
 
-        getNoRoleUsersDTO.setCount(userList.size());
 
         for (UserContract.User user : userList) {
             GetNoRoleUserInfoDTO getNoRoleUserInfoDTO = new GetNoRoleUserInfoDTO();

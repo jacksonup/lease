@@ -13,8 +13,6 @@ import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.service.UserService;
 import com.hdu.lease.property.SmsProperties;
 import com.hdu.lease.sms.SmsUtils;
-import com.hdu.lease.utils.ExcelUtils;
-import com.hdu.lease.utils.RandomNumberUtils;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.common.profile.ClientProfile;

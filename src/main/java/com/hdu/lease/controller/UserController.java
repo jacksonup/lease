@@ -246,7 +246,7 @@ public class UserController {
     }
 
     @GetMapping("/getPlaceManager")
-    public BaseGenericsResponse<String> getPlaceManager(String token, String placeId) throws Exception {
+    public BaseGenericsResponse<PlaceManagerDTO> getPlaceManager(String token, String placeId) throws Exception {
         return userService.getPlaceManager(token, placeId);
     }
 
