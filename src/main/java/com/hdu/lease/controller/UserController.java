@@ -184,7 +184,7 @@ public class UserController {
      *
      * @return
      */
-    @PostMapping("/audit/audit")
+    @GetMapping("/audit/audit")
     public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) throws Exception {
         return userService.audit(auditRequest);
     }
@@ -194,7 +194,7 @@ public class UserController {
      *
      * @return
      */
-    @PostMapping("/audit/audits")
+    @GetMapping("/audit/audits")
     public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) {
         return userService.audits(auditPreviewRequest);
     }
