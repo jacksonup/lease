@@ -5,13 +5,23 @@ import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
 import com.hdu.lease.service.UserService;
+import com.hdu.lease.utils.QrCodeUtil;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * 用户模块控制类
@@ -195,7 +205,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/audit/audits")
-    public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) {
+    public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) throws Exception{
         return userService.audits(auditPreviewRequest);
     }
 
@@ -207,7 +217,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/info/read")
-    public BaseGenericsResponse<String> read(String token, String infoId) {
+    public BaseGenericsResponse<String> read(String token, String infoId) throws Exception {
         return userService.read(token, infoId);
     }
 
@@ -218,19 +228,19 @@ public class UserController {
      * @return
      */
     @GetMapping("/info/counts")
-    public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) {
+    public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) throws Exception {
         return userService.counts(noticeCountListRequest);
     }
 
     /**
      * 按类型获取通知
      *
-     * @param noticeCountListRequest
+     * @param noticeInfosRequest
      * @return
      */
     @GetMapping("/info/infos")
-    public BaseGenericsResponse<InfoDTO> infos(NoticeCountListRequest noticeCountListRequest) {
-        return userService.infos(noticeCountListRequest);
+    public BaseGenericsResponse<List<InfoDTO>> infos(NoticeInfosRequest noticeInfosRequest) throws Exception {
+        return userService.infos(noticeInfosRequest);
     }
 
     /**
@@ -241,7 +251,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/info/readAll")
-    public BaseGenericsResponse<String> readAll(String token, List<Long> infoIds) {
+    public BaseGenericsResponse<String> readAll(String token, List<String> infoIds) throws Exception {
         return userService.readAll(token, infoIds);
     }
 
@@ -254,4 +264,22 @@ public class UserController {
     public BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) throws Exception{
         return userService.getNoRole2s(token, from);
     }
+
+    @GetMapping("/grantPlaceManager")
+    public BaseGenericsResponse<String> grantPlaceManager(GrantPlaceManagerDTO grantPlaceManagerDTO) throws Exception {
+        return userService.grantPlaceManager(grantPlaceManagerDTO);
+    }
+
+    /**
+     * 获取审批数目列表
+     *
+     * @param auditCountsRequest
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/audit/counts")
+    public BaseGenericsResponse<List<Integer>> auditCounts(AuditCountsRequest auditCountsRequest) throws Exception{
+        return userService.auditCounts(auditCountsRequest);
+    }
+
 }

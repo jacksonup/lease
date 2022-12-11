@@ -23,5 +23,5 @@ public class NoticeCountListRequest extends BaseRequest{
     /**
      * 是否需要时间段
      */
-    private String timeRange;
+    private Boolean timeRange;
 }

@@ -1,9 +1,6 @@
 package com.hdu.lease.service;
 
-import com.hdu.lease.contract.AssetContract;
-import com.hdu.lease.contract.AuditContract;
-import com.hdu.lease.contract.PlaceContract;
-import com.hdu.lease.contract.UserContract;
+import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
@@ -14,10 +11,13 @@ import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.ExcelUtils;
 import com.hdu.lease.utils.JwtUtils;
+import com.tencentcloudapi.tem.v20201221.models.IngressInfo;
+import jnr.ffi.annotations.In;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -29,10 +29,12 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tuples.generated.Tuple2;
 import org.web3j.tx.gas.StaticGasProvider;
 import javax.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -63,7 +65,11 @@ public class UserServiceImpl implements UserService {
 
     private AssetContract assertContract;
 
+    private AssetDetailContract assetDetailContract;
+
     private AuditContract auditContract;
+
+    private NoticeContract noticeContract;
 
     /**
      * 调用智能合约
@@ -84,7 +90,9 @@ public class UserServiceImpl implements UserService {
         Contract userContractEntity = contractMapper.selectById(1);
         Contract placeContractEntity = contractMapper.selectById(2);
         Contract assetContractEntity = contractMapper.selectById(3);
+        Contract assetDetailContractEntity = contractMapper.selectById(5);
         Contract auditContractEntity = contractMapper.selectById(6);
+        Contract noticeContractEntity = contractMapper.selectById(7);
 
         // 加载合约
         usercontract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
@@ -92,6 +100,18 @@ public class UserServiceImpl implements UserService {
         assertContract = AssetContract.load(assetContractEntity.getContractAddress(), web3j, credentials, provider);
         auditContract = AuditContract.load(
                 auditContractEntity.getContractAddress(),
+                web3j,
+                credentials,
+                provider
+        );
+        assetDetailContract = AssetDetailContract.load(
+                assetDetailContractEntity.getContractAddress(),
+                web3j,
+                credentials,
+                provider
+        );
+        noticeContract = NoticeContract.load(
+                noticeContractEntity.getContractAddress(),
                 web3j,
                 credentials,
                 provider
@@ -499,29 +519,47 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
         }
 
-        AuditContract.Audit audit = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+        Tuple2<AuditContract.Audit, AuditContract.AuditBeginEndTime> audits = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+
+        AuditContract.Audit audit = audits.getValue1();
+        AuditContract.AuditBeginEndTime auditBeginEndTime = audits.getValue2();
+
         if (ObjectUtils.isEmpty(audit)) {
             log.error("审批单号错误");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号错误");
         }
 
-        // TODO 增加字段审核人
         String auditAccount = JwtUtils.getTokenInfo(auditRequest.getToken()).getClaim("account").asString();
         if (StringUtils.isEmpty(auditAccount)) {
             log.error("token失效");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
-        audit.setAuditAccount(auditAccount);
-        audit.setReviewStatus(new BigInteger("3"));
-        audit.setReviewReason(auditRequest.getDenyReason());
 
         // 获取当前时间
         LocalDateTime localDateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        audit.setReviewTime(localDateTime.format(formatter));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
+        AuditContract.Audit newAudit = new AuditContract.Audit(
+                audit.getAuditId(),
+                audit.getAssetId(),
+                audit.getPlaceId(),
+                audit.getBorrowerAccount(),
+                audit.getBorrowReason(),
+                audit.getCount(),
+                auditAccount,
+                new BigInteger("3"),
+                auditRequest.getDenyReason(),
+                audit.getApplyTime(),
+                new BigInteger(localDateTime.format(formatter))
+        );
 
-        TransactionReceipt transactionReceipt = auditContract.updateAuditInfo(audit).send();
+        AuditContract.AuditBeginEndTime newAuditBeginEndTime = new AuditContract.AuditBeginEndTime(
+                auditBeginEndTime.getAuditId(),
+                auditBeginEndTime.getBeginTime(),
+                auditBeginEndTime.getEndTime()
+        );
+
+        TransactionReceipt transactionReceipt = auditContract.updateAuditInfo(newAudit, newAuditBeginEndTime).send();
         int code = auditContract.getIsUpdateSuccessEvents(transactionReceipt).get(0).code.intValue();
         // 这个判断实际无效...
         if (code == 10001) {
@@ -543,29 +581,47 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
         }
 
-        AuditContract.Audit audit = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+        Tuple2<AuditContract.Audit, AuditContract.AuditBeginEndTime> audits = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+
+        AuditContract.Audit audit = audits.getValue1();
+        AuditContract.AuditBeginEndTime auditBeginEndTime = audits.getValue2();
+
         if (ObjectUtils.isEmpty(audit)) {
             log.error("审批单号错误");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号错误");
         }
 
-        // TODO 增加字段审核人
         String auditAccount = JwtUtils.getTokenInfo(auditRequest.getToken()).getClaim("account").asString();
         if (StringUtils.isEmpty(auditAccount)) {
             log.error("token失效");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
-        audit.setAuditAccount(auditAccount);
-        audit.setReviewStatus(new BigInteger("3"));
-        audit.setReviewReason("审批通过");
 
         // 获取当前时间
         LocalDateTime localDateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        audit.setReviewTime(localDateTime.format(formatter));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
+        AuditContract.Audit newAudit = new AuditContract.Audit(
+                audit.getAuditId(),
+                audit.getAssetId(),
+                audit.getPlaceId(),
+                audit.getBorrowerAccount(),
+                audit.getBorrowReason(),
+                audit.getCount(),
+                auditAccount,
+                new BigInteger("3"),
+                "审批通过",
+                audit.getApplyTime(),
+                new BigInteger(localDateTime.format(formatter))
+        );
 
-        TransactionReceipt transactionReceipt = auditContract.updateAuditInfo(audit).send();
+        AuditContract.AuditBeginEndTime newAuditBeginEndTime = new AuditContract.AuditBeginEndTime(
+                auditBeginEndTime.getAuditId(),
+                auditBeginEndTime.getBeginTime(),
+                auditBeginEndTime.getEndTime()
+        );
+
+        TransactionReceipt transactionReceipt = auditContract.updateAuditInfo(newAudit, newAuditBeginEndTime).send();
         int code = auditContract.getIsUpdateSuccessEvents(transactionReceipt).get(0).code.intValue();
         // 这个判断实际无效...
         if (code == 10001) {
@@ -587,7 +643,11 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号为空");
         }
 
-        AuditContract.Audit audit = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+        Tuple2<AuditContract.Audit, AuditContract.AuditBeginEndTime> audits = auditContract.getAuditByPrimaryKey(auditRequest.getAuditId()).send();
+
+        AuditContract.Audit audit = audits.getValue1();
+        AuditContract.AuditBeginEndTime auditBeginEndTime = audits.getValue2();
+
         if (ObjectUtils.isEmpty(audit)) {
             log.error("审批单号错误");
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "审批单号错误");
@@ -612,7 +672,7 @@ public class UserServiceImpl implements UserService {
         auditFormDTO.setAssetName(asset.getAssetName());
         auditFormDTO.setAssetValue(asset.getPrice().doubleValue());
 
-        auditFormDTO.setTimeRange(audit.getBeginTime() + " ~ " + audit.getEndTime());
+        auditFormDTO.setTimeRange(auditBeginEndTime.getBeginTime() + " ~ " + auditBeginEndTime.getEndTime());
         auditFormDTO.setApplyReason(audit.getBorrowReason());
 
         // 设置驳回理由
@@ -627,7 +687,44 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) {
+    public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) throws Exception {
+        // 判断权限
+        if (!judgeRole(auditPreviewRequest.getToken(), 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        // 格式化时间
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime parsedBeginDateTime = LocalDateTime.parse(auditPreviewRequest.getFrom(), formatter);
+        LocalDateTime parsedEndDateTime = LocalDateTime.parse(auditPreviewRequest.getTo(), formatter);
+
+        formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        BigInteger beginTime = new BigInteger(parsedBeginDateTime.format(formatter));
+        BigInteger endTime = new BigInteger(parsedEndDateTime.format(formatter));
+
+        List<BigInteger> typeList = new ArrayList<>();
+
+        String type = auditPreviewRequest.getType();
+        switch (type) {
+            case "all" : typeList.add(new BigInteger("-1")); break;
+            case "unAudit" : typeList.add(new BigInteger("1")); break;
+            case "pass" : typeList.add(new BigInteger("2")); break;
+            case "deny" : typeList.add(new BigInteger("3")); break;
+            default: typeList.add(new BigInteger("0"));
+        }
+
+        // 调用合约方法
+//        auditContract.getListByTypeAndTime(
+//                beginTime,
+//                endTime,
+//                auditPreviewRequest.getTimeRange(),
+//                typeList,
+//                usercontract.getContractAddress(),
+//                assertContract.getContractAddress()).send();
+
+        //
         return null;
     }
 
@@ -635,32 +732,128 @@ public class UserServiceImpl implements UserService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> read(String token, String infoId) {
-        return null;
+    public BaseGenericsResponse<String> read(String token, String infoId) throws Exception{
+        NoticeContract.Notice notice = noticeContract.getById(infoId).send();
+        NoticeContract.Notice newNotice = new NoticeContract.Notice(
+                notice.getId(),
+                notice.getNoticeType(),
+                notice.getNoticerAccount(),
+                notice.getCreateTime(),
+                true,
+                notice.getContent()
+        );
+
+        noticeContract.update(newNotice).send();
+
+        return BaseGenericsResponse.successBaseResp("已读成功");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) {
-        return null;
+    public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) throws Exception {
+        // 格式化时间
+        LocalDate localDate = LocalDate.parse(noticeCountListRequest.getFrom());
+        String beginTime = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        log.info("开始时间：{}", beginTime);
+
+        localDate = LocalDate.parse(noticeCountListRequest.getTo());
+        String endTime = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        log.info("结束时间：{}", endTime);
+
+        List<Integer> list = new ArrayList<>();
+        // 获取各个状态counts
+        NoticeContract.NoticeCountsDTO noticeCountsDTO = noticeContract.getTypeCounts(
+                noticeCountListRequest.getTimeRange(),
+                new BigInteger(beginTime),
+                new BigInteger(endTime),
+                false
+        ).send();
+
+        // 总未读数
+        list.add(noticeCountsDTO.getAllCounts().intValue());
+
+        // 借用通知未读数
+        list.add(noticeCountsDTO.getBorrowCounts().intValue());
+
+        // 审批通知未读数
+        list.add(noticeCountsDTO.getAuditCounts().intValue());
+
+        // 仓库管理员通知未读数
+        list.add(noticeCountsDTO.getPlaceManagerCounts().intValue());
+
+        // 通用通知未读数
+        list.add(noticeCountsDTO.getNormalCounts().intValue());
+
+        return BaseGenericsResponse.successBaseResp(list);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<InfoDTO> infos(NoticeCountListRequest noticeCountListRequest) {
-        return null;
+    public BaseGenericsResponse<List<InfoDTO>> infos(NoticeInfosRequest noticeInfosRequest) throws Exception {
+        // 格式化时间
+        LocalDate localDate = LocalDate.parse(noticeInfosRequest.getFrom());
+        String beginTime = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        log.info("开始时间：{}", beginTime);
+
+        localDate = LocalDate.parse(noticeInfosRequest.getTo());
+        String endTime = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        log.info("结束时间：{}", endTime);
+
+        String noticeType = noticeInfosRequest.getType();
+        boolean isRead = false;
+        boolean isType = true;
+
+        switch (noticeType) {
+            case "all" : noticeType = "-1"; break;
+            case "unread" : noticeType = "0"; isRead = true; isType = false; break;
+            case "borrow" : noticeType = "1"; break;
+            case "audit" : noticeType = "2"; break;
+            case "general" : noticeType = "3"; break;
+            case "placeManager" : noticeType = "4"; break;
+        }
+
+        List<NoticeContract.Notice> noticeList = noticeContract.getListByTimeAndTypeOrIsRead(
+                noticeInfosRequest.getTimeRange(),
+                new BigInteger(beginTime),
+                new BigInteger(endTime),
+                new BigInteger(noticeType),
+                isType,
+                isRead
+        ).send();
+
+        List<InfoDTO> infoDTOList = new ArrayList<>();
+
+        for (NoticeContract.Notice notice : noticeList) {
+            InfoDTO infoDTO = new InfoDTO();
+            infoDTO.setInfoId(notice.getId());
+            infoDTO.setRead(notice.getIsRead());
+
+            HashMap<String, String> map = new HashMap<>(6);
+
+            // 格式化时间
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime parsedBeginDateTime = LocalDateTime.parse(String.valueOf(notice.getCreateTime()), formatter);
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String time = parsedBeginDateTime.format(formatter);
+
+            map.put(time, notice.getContent());
+            infoDTO.setContent(map);
+            infoDTOList.add(infoDTO);
+        }
+        return BaseGenericsResponse.successBaseResp(infoDTOList);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> readAll(String token, List<Long> infoIds) {
-        return null;
+    public BaseGenericsResponse<String> readAll(String token, List<String> infoIds) throws Exception {
+        noticeContract.readAll(infoIds).send();
+        return BaseGenericsResponse.successBaseResp("一键已读成功");
     }
 
     /**
@@ -712,7 +905,6 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.successBaseResp(getNoRoleUsersDTO);
         }
 
-
         for (UserContract.User user : userList) {
             GetNoRoleUserInfoDTO getNoRoleUserInfoDTO = new GetNoRoleUserInfoDTO();
             getNoRoleUserInfoDTO.setRole(user.getRole());
@@ -725,6 +917,108 @@ public class UserServiceImpl implements UserService {
         getNoRoleUsersDTO.setGetNoRoleUserInfoDTOList(getNoRoleUserInfoDTOList);
 
         return BaseGenericsResponse.successBaseResp(getNoRoleUsersDTO);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<String> grantPlaceManager(GrantPlaceManagerDTO grantPlaceManagerDTO) throws Exception {
+        // 判断权限
+        if (!judgeRole(grantPlaceManagerDTO.getToken(), 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        boolean flag = false;
+        String msg = "";
+
+        // 授权
+        if (grantPlaceManagerDTO.getGrant()) {
+            msg = "授权成功";
+            flag = true;
+        } else {
+            // 撤销
+            List<BigInteger> list = Stream.of(new BigInteger("1"), new BigInteger("2")).collect(Collectors.toList());
+            List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatusAndPlaceId(list, grantPlaceManagerDTO.getPlaceId()).send();
+
+            // 判断仓库内物资全部是否处于申请中、借用中
+            if (CollectionUtils.isEmpty(assetDetailList) || assetDetailList.size() == 0) {
+                flag = true;
+                msg = "撤销成功";
+            }
+        }
+
+        if (flag) {
+            PlaceContract.Place place = placeContract.getById(grantPlaceManagerDTO.getPlaceId()).send();
+            PlaceContract.Place newPlace = new PlaceContract.Place(
+                    place.getPlaceId(),
+                    place.getPlaceName(),
+                    place.getPlaceAddress(),
+                    grantPlaceManagerDTO.getAccount(),
+                    new BigInteger("0")
+            );
+
+            // 更新
+            placeContract.update(newPlace).send();
+        }
+        return BaseGenericsResponse.successBaseResp(msg);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<Integer>> auditCounts(AuditCountsRequest auditCountsRequest) throws Exception {
+        // 判断权限
+        if (!judgeRole(auditCountsRequest.getToken(), 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        // 格式化时间
+        LocalDate localDate = LocalDate.parse(auditCountsRequest.getFrom());
+        String beginTime = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        log.info("开始时间：{}", beginTime);
+
+        localDate = LocalDate.parse(auditCountsRequest.getTo());
+        String endTime = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
+        log.info("结束时间：{}", endTime);
+
+        Tuple2<List<AuditContract.Audit>, List<AuditContract.AuditBeginEndTime>> auditLists = auditContract.getListByTime(auditCountsRequest.getTimeRange(),
+                new BigInteger(beginTime),
+                new BigInteger(endTime)).send();
+
+        List<AuditContract.Audit> auditList = auditLists.getValue1();
+
+        List<Integer> countsList = new ArrayList<>();
+        HashMap<Integer, Integer> map = new HashMap<>(6);
+        if (CollectionUtils.isEmpty(countsList) || auditList.size() == 0) {
+            return BaseGenericsResponse.successBaseResp(countsList);
+        }
+
+        // 申请总数
+        countsList.add(auditList.size());
+
+        for (AuditContract.Audit audit : auditList) {
+            int statusCode = audit.getReviewStatus().intValue();
+            if (map.containsKey(statusCode)) {
+                map.put(statusCode, map.getOrDefault(statusCode, 0) + 1);
+            } else {
+                map.put(statusCode, 0);
+            }
+        }
+
+        // 未审批总数
+        countsList.add(map.getOrDefault(1, 0));
+
+        // 已通过总数
+        countsList.add(map.getOrDefault(2, 0));
+
+        // 已驳回总数
+        countsList.add(map.getOrDefault(3, 0));
+
+        return BaseGenericsResponse.successBaseResp(countsList);
     }
 
     /**

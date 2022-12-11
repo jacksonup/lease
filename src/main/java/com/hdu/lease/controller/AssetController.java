@@ -4,7 +4,6 @@ import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.service.AssetService;
-import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -101,8 +100,8 @@ public class AssetController {
 
     @PostMapping("/supply")
     @ResponseBody
-    public void supply(SupplyRequest supplyRequest) throws Exception {
-        assetService.supply(supplyRequest);
+    public BaseGenericsResponse<Map<String, String>> supply(SupplyRequest supplyRequest) throws Exception {
+        return assetService.supply(supplyRequest);
     }
 
     /**
@@ -152,5 +151,9 @@ public class AssetController {
         return assetService.undercarriage(shelfOperateRequest);
     }
 
-
+//    @GetMapping("/timeline")
+//    @ResponseBody
+//    public BaseGenericsResponse<> timeline(String token, String assetDetailId) throws Exception {
+//
+//    }
 }

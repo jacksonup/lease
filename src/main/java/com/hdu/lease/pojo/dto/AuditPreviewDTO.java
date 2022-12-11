@@ -33,4 +33,9 @@ public class AuditPreviewDTO {
      * 审批状态
      */
     private String status;
+
+    /**
+     * 发起申请时间
+     */
+    private String time;
 }

@@ -17,4 +17,6 @@ public class DetailsRequest extends BaseRequest{
     private BigInteger fromIndex;
 
     private String placeId;
+
+    private String status;
 }

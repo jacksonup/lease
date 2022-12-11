@@ -1,14 +1,8 @@
 package com.hdu.lease;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.read.listener.ReadListener;
-import com.alibaba.excel.util.ListUtils;
-import com.alibaba.fastjson.JSONObject;
 import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.entity.Contract;
-import com.hdu.lease.pojo.excel.UserInfo;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.service.UserService;
 import com.hdu.lease.property.SmsProperties;
@@ -31,13 +25,11 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
-
-import java.io.File;
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @SpringBootTest
@@ -110,6 +102,11 @@ class LeaseApplicationTests {
         AuditContract auditContract = AuditContract.deploy(web3j, credentials, provider).send();
         log.info("AuditContract合约地址：{}", auditContract.getContractAddress());
         log.info("AuditContract 是否可用：{}",auditContract.isValid());
+
+        // 部署通知合约
+        NoticeContract noticeContract = NoticeContract.deploy(web3j, credentials, provider).send();
+        log.info("NoticeContract合约地址：{}", noticeContract.getContractAddress());
+        log.info("NoticeContract 是否可用：{}",noticeContract.isValid());
 
         // 维护合约地址
         if (userContract.isValid()) {
@@ -205,76 +202,6 @@ class LeaseApplicationTests {
         list.add(lyl);
         userContract.batchAddUser(list).sendAsync().get();
     }
-
-    @Test
-    void addUser() throws Exception {
-        // 监听本地链
-        Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
-
-        // 生成资格凭证
-        Credentials credentials = Credentials.create(contractProperties.getCredentials());
-
-        StaticGasProvider provider = new StaticGasProvider(
-                contractProperties.getGasPrice(),
-                contractProperties.getGasLimit());
-
-        // 取合约地址
-        Contract contract = contractMapper.selectById(1);
-
-        // 加载合约
-        UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
-        log.info("UserContract 是否可用：{}",usercontract.isValid());
-        UserContract.User lyl = new UserContract.User(
-                "19052239",
-                "lyl",
-                "18106660269",
-                "827ccb0eea8a706c4c34a16891f84e7b",
-                new BigInteger("1"),
-                new BigInteger("0"),
-                new BigInteger("0")
-        );
-        List<UserContract.User> list = new ArrayList<>();
-        list.add(lyl);
-        usercontract.batchAddUser(list).sendAsync().get();
-
-        UserContract.User cyb = usercontract.getUserInfo("19052239").send();
-        log.info("User:{}",cyb);
-        UserContract.User admin = usercontract.getUserInfo("admin").send();
-        log.info("User:{}",admin);
-    }
-
-    @Test
-    void  modifyUserInfoById() throws Exception{
-       // 监听本地链
-       Web3j web3j = Web3j.build(new HttpService(contractProperties.getHttpService()));
-
-       // 生成资格凭证
-       Credentials credentials = Credentials.create(contractProperties.getCredentials());
-
-       StaticGasProvider provider = new StaticGasProvider(
-               contractProperties.getGasPrice(),
-               contractProperties.getGasLimit());
-
-       // 取合约地址
-       Contract contract = contractMapper.selectById(1);
-
-       // 加载合约
-       UserContract usercontract = UserContract.load(contract.getContractAddress(), web3j, credentials, provider);
-       log.info("UserContract 是否可用：{}",usercontract.isValid());
-
-        UserContract.User user = new UserContract.User(
-               "19052239",
-               "lyl",
-               "18106660269",
-               "12345",
-               new BigInteger("1"),
-               new BigInteger("0"),
-               new BigInteger("0")
-       );
-        UserContract.User lyl = usercontract.getUserInfo("19052239").send();
-        log.info("User:{}",lyl);
-
-   }
 
     @Test
     void contextLoads() {
@@ -381,18 +308,7 @@ class LeaseApplicationTests {
         } catch (TencentCloudSDKException e) {
             e.printStackTrace();
         }
-
     }
 
-    @Test
-    void testSmsSend() {
-        String[] templateParamSet = {"231333", "5"};
-        smsUtils.send(templateParamSet, "8615906888912", "1390134");
-    }
-
-    @Test
-    void work() {
-
-    }
 
 }

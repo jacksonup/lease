@@ -165,8 +165,9 @@ public interface UserService {
      *
      * @param auditPreviewRequest
      * @return
+     * @throws Exception
      */
-    BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest);
+    BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) throws Exception;
 
     /**
      * 标记对应通知已读
@@ -175,7 +176,7 @@ public interface UserService {
      * @param infoId
      * @return
      */
-    BaseGenericsResponse<String> read(String token, String infoId);
+    BaseGenericsResponse<String> read(String token, String infoId) throws Exception;
 
     /**
      * 获取通知未读数量列表
@@ -183,15 +184,15 @@ public interface UserService {
      * @param noticeCountListRequest
      * @return
      */
-    BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest);
+    BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) throws Exception;
 
     /**
      * 按类型获取通知
      *
-     * @param noticeCountListRequest
+     * @param noticeInfosRequest
      * @return
      */
-    BaseGenericsResponse<InfoDTO> infos(NoticeCountListRequest noticeCountListRequest);
+    BaseGenericsResponse<List<InfoDTO>> infos(NoticeInfosRequest noticeInfosRequest) throws Exception;
 
     /**
      * 一键标为已读
@@ -200,7 +201,7 @@ public interface UserService {
      * @param infoIds
      * @return
      */
-    BaseGenericsResponse<String> readAll(String token, List<Long> infoIds);
+    BaseGenericsResponse<String> readAll(String token, List<String> infoIds) throws Exception;
 
     /**
      * 获取指定仓库管理员
@@ -221,4 +222,22 @@ public interface UserService {
      * @throws Exception 异常
      */
     BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) throws Exception;
+
+    /**
+     * 授权或撤销仓库管理员
+     *
+     * @param grantPlaceManagerDTO
+     * @return
+     * @throws Exception 异常
+     */
+    BaseGenericsResponse<String> grantPlaceManager(GrantPlaceManagerDTO grantPlaceManagerDTO) throws Exception;
+
+    /**
+     * 获取审批数目列表
+     *
+     * @param auditCountsRequest
+     * @return
+     * @throws Exception
+     */
+    BaseGenericsResponse<List<Integer>> auditCounts(AuditCountsRequest auditCountsRequest) throws Exception;
 }

@@ -12,12 +12,12 @@ import com.hdu.lease.pojo.response.base.BaseResponse;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.property.OssProperties;
 import com.hdu.lease.utils.JwtUtils;
+import com.hdu.lease.utils.QrCodeUtil;
 import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,14 +26,17 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
+
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -148,14 +151,13 @@ public class AssetServiceImpl implements AssetService {
         int count = 0, sum = 0;
         for (int i = 0; i < list.size(); i++) {
             Map<String, Integer> map = list.get(i);
-            for(String key : map.keySet()) {
+            for (String key : map.keySet()) {
                 count = map.get(key);
                 sum += count;
                 placeId = key;
 
                 List<String> assetDetailIdList = new ArrayList<>();
                 // 生产资产明细
-                // TODO 修改数据结构后，增加相应字段
                 for (int j = 0; j < count; j++) {
                     String blankStr = "";
                     String assetDetailId = UuidUtils.createUuid();
@@ -232,10 +234,17 @@ public class AssetServiceImpl implements AssetService {
             assetDTO.setRest(assetDetailList.size());
 
             // 获取绑定的自提点
-            List<String> placeList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
-            assetDTO.setPlaceList(placeList);
-            assetDTO.setAssetId(assetList.get(i).getAssetId());
+            List<PlaceAssetContract.PlaceInfo> placeIdNameList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
+            HashMap<String, String> map = new HashMap<>(6);
 
+            if (!(CollectionUtils.isEmpty(placeIdNameList) || placeIdNameList.size() == 0)) {
+                for (PlaceAssetContract.PlaceInfo placeIdName : placeIdNameList) {
+                    map.put(placeIdName.getPlaceId(), placeIdName.getPlaceName());
+                }
+            }
+
+            assetDTO.setPlaceList(map);
+            assetDTO.setAssetId(assetList.get(i).getAssetId());
             assetDTOList.add(assetDTO);
         }
 
@@ -250,6 +259,8 @@ public class AssetServiceImpl implements AssetService {
         if (!userService.judgeRole(token, 1)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
         }
+
+
         return null;
     }
 
@@ -279,7 +290,7 @@ public class AssetServiceImpl implements AssetService {
             String fileName = picture.getOriginalFilename();
 
             // 1、在文件名称里面添加随机唯一值(避免上传文件名称相同的话，后面的问号会将前面的文件给覆盖了)
-            String uuid = UUID.randomUUID().toString().replaceAll("-","");
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
             fileName = uuid + fileName;
 
             // 2、文件按照日期进行分类：2022/11/28/1.jpg
@@ -321,26 +332,38 @@ public class AssetServiceImpl implements AssetService {
         String borrowerAccount = JwtUtils.getTokenInfo(assetApplyRequest.getToken()).getClaim("account").asString();
 
         String blankStr = "";
+
+        // 格式化时间
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime parsedBeginDateTime = LocalDateTime.parse(assetApplyRequest.getFrom(), formatter);
+        LocalDateTime parsedEndDateTime = LocalDateTime.parse(assetApplyRequest.getTo(), formatter);
+
+        formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        BigInteger beginTime = new BigInteger(parsedBeginDateTime.format(formatter));
+        BigInteger endTime = new BigInteger(parsedEndDateTime.format(formatter));
+
+        String auditId = UuidUtils.createUuid();
+
         // 创建物资申请表单
-        AuditContract.Audit audit = new AuditContract.Audit(
-                UuidUtils.createUuid(),
+        AuditContract.Audit newAudit = new AuditContract.Audit(
+                auditId,
                 assetApplyRequest.getAssetType(),
-                assetApplyRequest.getPlacId(),
+                assetApplyRequest.getPlaceId(),
                 borrowerAccount,
-                assetApplyRequest.getFrom(),
-                assetApplyRequest.getTo(),
                 assetApplyRequest.getReason(),
                 BigInteger.valueOf(assetApplyRequest.getCount()),
                 blankStr,
                 new BigInteger("1"),
-                blankStr,
-                blankStr
+                "审批通过",
+                new BigInteger(""),
+                new BigInteger("")
         );
 
         // TODO 校验是否超过违规次数
 
         // 添加审批记录
-        auditContract.insertAudit(audit).send();
+        auditContract.insertAudit(newAudit, beginTime, endTime).send();
 
         return BaseGenericsResponse.successBaseResp("申请成功，请耐心等待审批");
     }
@@ -372,7 +395,7 @@ public class AssetServiceImpl implements AssetService {
         AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(assetId).send();
         if (ObjectUtils.isEmpty(assetDetail)) {
             log.info("此物资已销毁");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"此物资已销毁");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "此物资已销毁");
         }
 
         // 根据主键获取资产信息
@@ -424,7 +447,7 @@ public class AssetServiceImpl implements AssetService {
         // 判断权限
         if (!userService.judgeRoles(editAssetRequest.getToken(), 1, 2)) {
             log.info("权限不足");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         if (StringUtils.isEmpty(editAssetRequest.getAssetId())) {
@@ -470,12 +493,12 @@ public class AssetServiceImpl implements AssetService {
         // 判断权限
         if (!userService.judgeRoles(token, 2)) {
             log.info("权限不足");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         List<AssetContract.Asset> assetList = assertContract.getAllList().send();
         List<AssetsDTO> assetsDTOList = new ArrayList<>();
-        for(AssetContract.Asset asset : assetList) {
+        for (AssetContract.Asset asset : assetList) {
             AssetsDTO assetsDTO = new AssetsDTO();
             assetsDTO.setAssetId(asset.getAssetId());
             assetsDTO.setPicUrl(asset.getPicUrl());
@@ -505,7 +528,7 @@ public class AssetServiceImpl implements AssetService {
         // 判断权限
         if (!userService.judgeRoles(token, 1, 2)) {
             log.info("权限不足");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         // 判断主键是否为空
@@ -534,7 +557,7 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<String> updateStatus(UpdateStatusRequest updateStatusRequest) {
-        
+
         return null;
     }
 
@@ -543,15 +566,153 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<DetailsDTO> details(DetailsRequest detailsRequest) throws Exception {
-        return null;
+        // 判断权限
+        if (!userService.judgeRoles(detailsRequest.getToken(), 1, 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        DetailsDTO detailsDTO = new DetailsDTO();
+        List<DetailsDTO.DetailInfo> detailInfoList = new ArrayList<>();
+
+        // 获取总数
+        List<AssetDetailContract.AssetDetail> allAssetDetailList = assetDetailContract.getStatusListByPlaceId(detailsRequest.getPlaceId(), detailsRequest.getAssetId(), new BigInteger("-1")).send();
+
+        if (CollectionUtils.isEmpty(allAssetDetailList)) {
+            detailsDTO.setCount(0);
+        } else {
+            detailsDTO.setCount(allAssetDetailList.size());
+        }
+
+        if ("-1".equals(detailsRequest.getStatus())) {
+            int count = 0;
+            for (AssetDetailContract.AssetDetail assetDetail : allAssetDetailList) {
+                if (count++ == 10) {
+                    break;
+                }
+                DetailsDTO.DetailInfo detailInfo = new DetailsDTO.DetailInfo();
+                detailInfo.setDetailId(assetDetail.getAssetDetailId());
+                detailInfo.setStatus(assetDetail.getCurrentStatus().intValue());
+                detailInfoList.add(detailInfo);
+            }
+        } else {
+            int begin = detailsRequest.getFromIndex().intValue() * 10;
+
+            // 获取状态列表
+            List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.pageGetStatusListByPlaceId(detailsRequest.getPlaceId(),
+                    detailsRequest.getAssetId(),
+                    new BigInteger(detailsRequest.getStatus()),
+                    new BigInteger(String.valueOf(begin)),
+                    new BigInteger(String.valueOf(begin + 9))).send();
+
+            for (AssetDetailContract.AssetDetail assetDetail : allAssetDetailList) {
+                DetailsDTO.DetailInfo detailInfo = new DetailsDTO.DetailInfo();
+                detailInfo.setDetailId(assetDetail.getAssetDetailId());
+                detailInfo.setStatus(assetDetail.getCurrentStatus().intValue());
+                detailInfoList.add(detailInfo);
+            }
+        }
+
+        detailsDTO.setDetailInfoList(detailInfoList);
+        return BaseGenericsResponse.successBaseResp(detailsDTO);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void supply(SupplyRequest supplyRequest) throws Exception {}
+    public BaseGenericsResponse<Map<String, String>> supply(SupplyRequest supplyRequest) throws Exception {
+        // 判断权限
+        if (!userService.judgeRole(supplyRequest.getToken(), 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
 
+        List<AssetDetailContract.AssetDetail> assetDetailList = new ArrayList<>();
+
+        // 生成明细物资
+        for (int j = 0; j < supplyRequest.getCount(); j++) {
+            String blankStr = "";
+            String assetDetailId = UuidUtils.createUuid();
+            AssetDetailContract.AssetDetail assetDetail = new AssetDetailContract.AssetDetail(
+                    assetDetailId,
+                    blankStr,
+                    supplyRequest.getAssetId(),
+                    supplyRequest.getPlaceId(),
+                    blankStr,
+                    blankStr,
+                    new BigInteger("0"),
+                    new BigInteger("0")
+            );
+            assetDetailList.add(assetDetail);
+        }
+
+        assetDetailContract.insertAssetDetail(assetDetailList).send();
+
+        // 补充资产表中余量
+        AssetContract.Asset asset = assertContract.getById(supplyRequest.getAssetId()).send();
+        BigInteger assetCount = asset.getCount().add(new BigInteger(String.valueOf(supplyRequest.getCount())));
+
+        // 获取物资名
+        String assetName = asset.getAssetName();
+
+        AssetContract.Asset newAsset = new AssetContract.Asset(
+                asset.getAssetId(),
+                asset.getAssetName(),
+                asset.getIsApply(),
+                asset.getPicUrl(),
+                asset.getPrice(),
+                assetCount,
+                asset.getStatus()
+        );
+
+        assertContract.update(newAsset).send();
+
+        // 补充自提点资产表余量
+        PlaceAssetContract.PlaceAsset placeAsset = placeAssetContract.getByAssetIdAndPlaceId(supplyRequest.getAssetId(), supplyRequest.getPlaceId()).send();
+        BigInteger placeAssetCount = placeAsset.getCount().add(new BigInteger(String.valueOf(supplyRequest.getCount())));
+
+        PlaceAssetContract.PlaceAsset newPlaceAsset = new PlaceAssetContract.PlaceAsset(
+                placeAsset.getPlaceAssetId(),
+                supplyRequest.getPlaceId(),
+                supplyRequest.getAssetId(),
+                placeAssetCount,
+                placeAsset.getStatus()
+        );
+
+        placeAssetContract.update(newPlaceAsset).send();
+
+        // 获取仓库名
+        String placeName = placeContract.getById(placeAsset.getPlaceId()).send().getPlaceName();
+
+        HashMap<String, String> map = new HashMap<>(6);
+
+        // 生成二维码
+        for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            // 二维码内容
+            String content = assetDetail.getAssetDetailId();
+
+            // 二维码底部文字
+            String bottomContent = assetName + "-" + content + "-" + placeName;
+
+            BufferedImage image = QrCodeUtil.createImage(content, bottomContent, true);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            try {
+                ImageIO.write(image, "png", byteArrayOutputStream);
+
+                // 二维码转base64
+                String img = "data:image/png;base64," +
+                        Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+                map.put(bottomContent, img);
+            } catch (final IOException ioe) {
+                throw new UncheckedIOException(ioe);
+            }
+        }
+
+        return BaseGenericsResponse.successBaseResp(map);
+
+    }
 
     /**
      * {@inheritDoc}
@@ -561,10 +722,10 @@ public class AssetServiceImpl implements AssetService {
         // 判断权限
         if (!userService.judgeRole(token, 2)) {
             log.info("权限不足");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
-        List<BigInteger> list =Stream.of(new BigInteger("0"), new BigInteger("5")).collect(Collectors.toList());
+        List<BigInteger> list = Stream.of(new BigInteger("0"), new BigInteger("5")).collect(Collectors.toList());
 
         // 获取空闲及下架物资
         List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatusAndPlaceId(list, "").send();
@@ -590,7 +751,7 @@ public class AssetServiceImpl implements AssetService {
                 canGroundingDTO.setAssetId(asset.getAssetId());
                 canGroundingDTO.setName(asset.getAssetName());
                 canGroundingDTO.setPicUrl(asset.getPicUrl());
-                canGroundingDTO.setCount(map.get(key));
+                canGroundingDTO.setCount(assetDetailList.size());
                 canGroundingDTOList.add(canGroundingDTO);
             }
         }
@@ -606,15 +767,19 @@ public class AssetServiceImpl implements AssetService {
         // 判断权限
         if (!userService.judgeRole(shelfOperateRequest.getToken(), 2)) {
             log.info("权限不足");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         // 获取指定物资的空闲状态的明细物资
         List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(shelfOperateRequest.getAssetId(), new BigInteger("0")).send();
 
+        // 统计count
+        int count = 0;
         if (CollectionUtils.isEmpty(assetDetailList) && assetDetailList.size() == 0) {
             log.info("空闲状态的明细物资列表为空");
         } else {
+            count += assetDetailList.size();
+
             // 更新placeId
             for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
                 AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
@@ -636,6 +801,8 @@ public class AssetServiceImpl implements AssetService {
         if (CollectionUtils.isEmpty(assetDetailList) && assetDetailList.size() == 0) {
             log.info("下架状态的明细物资列表为空");
         } else {
+            count += assetDetailList.size();
+
             // 更新placeId
             for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
                 AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
@@ -652,6 +819,16 @@ public class AssetServiceImpl implements AssetService {
             }
 
             // 插入绑定物资信息
+            PlaceAssetContract.PlaceAsset placeAsset = new PlaceAssetContract.PlaceAsset(
+                    UuidUtils.createUuid(),
+                    shelfOperateRequest.getPlaceId(),
+                    shelfOperateRequest.getAssetId(),
+                    new BigInteger(String.valueOf(count)),
+                    new BigInteger("0")
+            );
+
+            List<PlaceAssetContract.PlaceAsset> placeAssetList = Stream.of(placeAsset).collect(Collectors.toList());
+            placeAssetContract.bindAsset(placeAssetList).send();
         }
 
         return BaseGenericsResponse.successBaseResp("上架成功");
@@ -665,7 +842,7 @@ public class AssetServiceImpl implements AssetService {
         // 判断权限
         if (!userService.judgeRole(shelfOperateRequest.getToken(), 2)) {
             log.info("权限不足");
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS,"权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
         List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getList(shelfOperateRequest.getAssetId()).send();
@@ -692,11 +869,12 @@ public class AssetServiceImpl implements AssetService {
                     new BigInteger("5"),
                     new BigInteger("0")
             );
-            assetDetailContract.update(assetDetail).send();
+            assetDetailContract.update(newAssetDetail).send();
+
+            placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId()).send();
         }
 
-
-        return null;
+        return BaseGenericsResponse.successBaseResp("下架成功");
     }
 
     /**
@@ -705,11 +883,11 @@ public class AssetServiceImpl implements AssetService {
      * @return
      */
     public AssetDTO one(AssetContract.Asset asset) {
-            AssetDTO assetDTO = new AssetDTO();
-            assetDTO.setApply(asset.getIsApply());
-            assetDTO.setPicUrl(asset.getPicUrl());
-            assetDTO.setName(asset.getAssetName());
-            assetDTO.setValue(asset.getPrice().intValue());
+        AssetDTO assetDTO = new AssetDTO();
+        assetDTO.setApply(asset.getIsApply());
+        assetDTO.setPicUrl(asset.getPicUrl());
+        assetDTO.setName(asset.getAssetName());
+        assetDTO.setValue(asset.getPrice().intValue());
         return assetDTO;
     }
 }

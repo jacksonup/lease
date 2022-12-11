@@ -29,5 +29,5 @@ public class InfoDTO {
     /**
      * id
      */
-    private Long infoId;
+    private String infoId;
 }

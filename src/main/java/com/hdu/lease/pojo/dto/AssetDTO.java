@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 获取指定资产信息DTO
@@ -26,7 +27,7 @@ public class AssetDTO {
 
     private Boolean apply;
 
-    private List<String> placeList;
+    private Map<String, String> placeList;
 
     private Integer value;
 }

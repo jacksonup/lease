@@ -106,7 +106,7 @@ public interface AssetService {
     BaseGenericsResponse<AssetInfoDTO> info(String token, String assetId) throws Exception;
 
     /**
-     * 手动修改明细物资状态
+     * 状态手动更新
      *
      * @param updateStatusRequest
      * @return
@@ -127,9 +127,10 @@ public interface AssetService {
      * 补充物资
      *
      * @param supplyRequest
+     * @return
      * @throws Exception
      */
-    void supply(SupplyRequest supplyRequest) throws Exception;
+    BaseGenericsResponse<Map<String, String>> supply(SupplyRequest supplyRequest) throws Exception;
 
     /**
      * 获取待上架物资
