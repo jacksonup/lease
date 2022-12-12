@@ -164,6 +164,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/logout")
+    @ResponseBody
     public BaseGenericsResponse<String> logout(BaseRequest baseRequest) {
         return userService.logout(baseRequest);
     }
@@ -175,6 +176,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/audit/no")
+    @ResponseBody
     public BaseGenericsResponse<String> reject(AuditRequest auditRequest) throws Exception {
         return userService.reject(auditRequest);
     }
@@ -185,6 +187,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/audit/yes")
+    @ResponseBody
     public BaseGenericsResponse<String> agree(AuditRequest auditRequest) throws Exception {
         return userService.agree(auditRequest);
     }
@@ -195,6 +198,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/audit/audit")
+    @ResponseBody
     public BaseGenericsResponse<AuditFormDTO> audit(AuditRequest auditRequest) throws Exception {
         return userService.audit(auditRequest);
     }
@@ -205,6 +209,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/audit/audits")
+    @ResponseBody
     public BaseGenericsResponse<List<AuditPreviewDTO>> audits(AuditPreviewRequest auditPreviewRequest) throws Exception{
         return userService.audits(auditPreviewRequest);
     }
@@ -217,6 +222,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/info/read")
+    @ResponseBody
     public BaseGenericsResponse<String> read(String token, String infoId) throws Exception {
         return userService.read(token, infoId);
     }
@@ -228,6 +234,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/info/counts")
+    @ResponseBody
     public BaseGenericsResponse<List<Integer>> counts(NoticeCountListRequest noticeCountListRequest) throws Exception {
         return userService.counts(noticeCountListRequest);
     }
@@ -239,6 +246,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/info/infos")
+    @ResponseBody
     public BaseGenericsResponse<List<InfoDTO>> infos(NoticeInfosRequest noticeInfosRequest) throws Exception {
         return userService.infos(noticeInfosRequest);
     }
@@ -251,21 +259,25 @@ public class UserController {
      * @return
      */
     @PostMapping("/info/readAll")
+    @ResponseBody
     public BaseGenericsResponse<String> readAll(String token, List<String> infoIds) throws Exception {
         return userService.readAll(token, infoIds);
     }
 
     @GetMapping("/getPlaceManager")
+    @ResponseBody
     public BaseGenericsResponse<PlaceManagerDTO> getPlaceManager(String token, String placeId) throws Exception {
         return userService.getPlaceManager(token, placeId);
     }
 
     @GetMapping("/getNoRole2s")
+    @ResponseBody
     public BaseGenericsResponse<GetNoRoleUsersDTO> getNoRole2s(String token, Integer from) throws Exception{
         return userService.getNoRole2s(token, from);
     }
 
     @GetMapping("/grantPlaceManager")
+    @ResponseBody
     public BaseGenericsResponse<String> grantPlaceManager(GrantPlaceManagerDTO grantPlaceManagerDTO) throws Exception {
         return userService.grantPlaceManager(grantPlaceManagerDTO);
     }
@@ -278,6 +290,7 @@ public class UserController {
      * @throws Exception
      */
     @GetMapping("/audit/counts")
+    @ResponseBody
     public BaseGenericsResponse<List<Integer>> auditCounts(AuditCountsRequest auditCountsRequest) throws Exception{
         return userService.auditCounts(auditCountsRequest);
     }
