@@ -355,15 +355,17 @@ public class AssetServiceImpl implements AssetService {
                 BigInteger.valueOf(assetApplyRequest.getCount()),
                 blankStr,
                 new BigInteger("1"),
-                "审批通过",
+                blankStr,
                 new BigInteger(""),
                 new BigInteger("")
         );
 
-        // TODO 校验是否超过违规次数
-
         // 添加审批记录
         auditContract.insertAudit(newAudit, beginTime, endTime).send();
+
+        // 修改当前物资状态
+
+
 
         return BaseGenericsResponse.successBaseResp("申请成功，请耐心等待审批");
     }
@@ -378,7 +380,6 @@ public class AssetServiceImpl implements AssetService {
     public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) {
         // 修改物资明细状态
 
-        // TODO 加入任务调度队列
 
         // 添加借用记录
 
@@ -401,38 +402,52 @@ public class AssetServiceImpl implements AssetService {
         // 根据主键获取资产信息
         AssetContract.Asset asset =
                 assertContract.getAssetByAssetDetailId(assetDetailContract.getContractAddress(), assetId).send();
+
+        // 1.显示物资图片、名称、价值、当前状态基本信息
         ScannedAssetDTO scannedAssetDTO = new ScannedAssetDTO();
         scannedAssetDTO.setUrl(asset.getPicUrl());
         scannedAssetDTO.setName(asset.getAssetName());
         scannedAssetDTO.setValue(asset.getPrice().intValue());
         scannedAssetDTO.setApply(asset.getIsApply());
-        scannedAssetDTO.setIsBorrow(assetDetail.getCurrentStatus().intValue() == 1);
-        scannedAssetDTO.setRest(asset.getCount().intValue());
 
-        // 获取空闲数量
-        List<AssetDetailContract.AssetDetail> assetDetailFreeList = assetDetailContract.getListByStatus(assetDetail.getAssetId(), new BigInteger("0")).send();
-        if (CollectionUtils.isEmpty(assetDetailFreeList)) {
-            scannedAssetDTO.setFree(0);
-        } else {
-            scannedAssetDTO.setFree(assetDetailFreeList.size());
+        // 2.判断当前状态
+        int currentStatus = assetDetail.getCurrentStatus().intValue();
+
+        // 校验状态
+        if (currentStatus == 1) {
+            // 处于借用中
+            // 格式化时间
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime parsedBeginDateTime = LocalDateTime.parse(String.valueOf(assetDetail.getEndTime()), formatter);
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String time = parsedBeginDateTime.format(formatter);
+
+            scannedAssetDTO.setExpiredTime(time);
         }
 
-        // 判断是否处在借用状态
-        if (assetDetail.getCurrentStatus().intValue() == 1) {
-            // TODO 资产状态明细表增加两个字段【beginTime】】【endTime】【placeId】
-            scannedAssetDTO.setExpiredTime(assetDetail.getEndTime());
-
+        if (currentStatus == 1 || currentStatus == 2) {
             String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
 
             // 判断是否被自己借用
-            if (assetDetail.getCurrentUserAccount().equals(account)) {
-                // 获取place信息
-                PlaceContract.Place place = placeContract.getById(assetDetail.getPlaceId()).send();
-                scannedAssetDTO.setPlace(place.getPlaceName());
-            } else {
+            if (!assetDetail.getCurrentUserAccount().equals(account)) {
                 // 获取user信息
                 UserContract.User user = userContract.getUserInfo(account).send();
                 scannedAssetDTO.setUsername(user.getName());
+                scannedAssetDTO.setPhone(user.getPhone());
+            }
+        }
+
+        // 判断是否有归属仓库
+        if (StringUtils.isNotEmpty(assetDetail.getPlaceId())) {
+            PlaceContract.Place place = placeContract.getById(assetDetail.getPlaceId()).send();
+            if (ObjectUtils.isNotEmpty(place)) {
+                scannedAssetDTO.setPlace(place.getPlaceName());
+                // 仓库管理员
+                String manageAccount = place.getPlaceManagerAccount();
+                // 获取管理员信息
+                UserContract.User user = userContract.getUserInfo(manageAccount).send();
+                scannedAssetDTO.setPlaceManager(user.getName());
+                scannedAssetDTO.setManagerPhone(user.getPhone());
             }
         }
 
@@ -875,6 +890,20 @@ public class AssetServiceImpl implements AssetService {
         }
 
         return BaseGenericsResponse.successBaseResp("下架成功");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BaseGenericsResponse<List<EventDTO>> timeline(String token, String assetDetailId) throws Exception {
+        if (!userService.judgeRoles(token, 1, 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+
+        return null;
     }
 
     /**

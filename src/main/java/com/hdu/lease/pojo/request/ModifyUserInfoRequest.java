@@ -9,8 +9,9 @@ import java.math.BigInteger;
  * @author chenyb46701
  * @date 2022/9/28
  */
-@Setter
 @Getter
+@Setter
+@ToString
 public class ModifyUserInfoRequest extends BaseRequest{
     private BigInteger role;
 

@@ -32,7 +32,7 @@ public class AuditPreviewDTO {
     /**
      * 审批状态
      */
-    private String status;
+    private int status;
 
     /**
      * 发起申请时间

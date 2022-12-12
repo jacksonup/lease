@@ -151,9 +151,9 @@ public class AssetController {
         return assetService.undercarriage(shelfOperateRequest);
     }
 
-//    @GetMapping("/timeline")
-//    @ResponseBody
-//    public BaseGenericsResponse<> timeline(String token, String assetDetailId) throws Exception {
-//
-//    }
+    @GetMapping("/timeline")
+    @ResponseBody
+    public BaseGenericsResponse<List<EventDTO>> timeline(String token, String assetDetailId) throws Exception {
+        return assetService.timeline(token, assetDetailId);
+    }
 }

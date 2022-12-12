@@ -26,9 +26,6 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,20 +33,8 @@ import java.util.List;
 @Ignore
 @Slf4j
 class LeaseApplicationTests {
-
-    private UserService userService;
-
-    @Autowired
-    private SmsUtils smsUtils;
-
-    @Autowired
-    private SmsProperties smsConfig;
-
     @Setter(onMethod_ = @Autowired)
     private ContractProperties contractProperties;
-
-    @Setter(onMethod_ = @Autowired)
-    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private ContractMapper contractMapper;
@@ -108,6 +93,11 @@ class LeaseApplicationTests {
         log.info("NoticeContract合约地址：{}", noticeContract.getContractAddress());
         log.info("NoticeContract 是否可用：{}",noticeContract.isValid());
 
+        // 部署事件合约
+        EventContract eventContract = EventContract.deploy(web3j, credentials, provider).send();
+        log.info("EventContract：{}", eventContract.getContractAddress());
+        log.info("EventContract 是否可用：{}",eventContract.isValid());
+
         // 维护合约地址
         if (userContract.isValid()) {
             Contract contract = new Contract();
@@ -149,6 +139,20 @@ class LeaseApplicationTests {
             contract.setId(6);
             contract.setContractName("auditContract");
             contract.setContractAddress(auditContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
+        if (noticeContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(7);
+            contract.setContractName("noticeContract");
+            contract.setContractAddress(noticeContract.getContractAddress());
+            contractMapper.updateById(contract);
+        }
+        if (eventContract.isValid()) {
+            Contract contract = new Contract();
+            contract.setId(8);
+            contract.setContractName("eventContract");
+            contract.setContractAddress(eventContract.getContractAddress());
             contractMapper.updateById(contract);
         }
 

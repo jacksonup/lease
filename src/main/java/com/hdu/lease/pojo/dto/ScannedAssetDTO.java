@@ -27,7 +27,7 @@ public class ScannedAssetDTO {
     /**
      * 价值
      */
-    private int value;
+    private Integer value;
 
     /**
      * 是否需要提交借用申请
@@ -35,9 +35,9 @@ public class ScannedAssetDTO {
     private Boolean apply;
 
     /**
-     * 空闲量
+     * 物资当前状态
      */
-    private Boolean isBorrow;
+    private Integer status;
 
     /**
      * yyyy-MM-dd HH:mm:ss物资借用到期时间（若未处于借用则为空）
@@ -45,22 +45,27 @@ public class ScannedAssetDTO {
     private String expiredTime;
 
     /**
-     * 物资归属仓库名（若物资未被自己借用则为空）
-     */
-    private String place;
-
-    /**
      * 使用者姓名（若物资正在被借用且使用者是自己则为空）
      */
     private String username;
 
     /**
-     * 空闲量
+     * 使用/申请者电话（若物资处于被借用或申请，且发起者是自己则填充，反之为空）
      */
-    private int free;
+    private String phone;
 
     /**
-     * 总量
+     * 仓库名（若有归属仓库）
      */
-    private int rest;
+    private String place;
+
+    /**
+     * 仓库管理员姓名（若有归属仓库）
+     */
+    private String placeManager;
+
+    /**
+     * 仓库管理员电话（若有归属仓库）
+     */
+    private String managerPhone;
 }

@@ -2,6 +2,7 @@ package com.hdu.lease.pojo.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 审批预览请求
@@ -11,6 +12,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 public class AuditPreviewRequest extends BaseRequest{
     /**
      * yyyy-MM-dd查询日期段

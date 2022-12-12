@@ -166,4 +166,14 @@ public interface AssetService {
      * @throws Exception 异常
      */
     BaseGenericsResponse<String> undercarriage(ShelfOperateRequest shelfOperateRequest) throws Exception;
+
+    /**
+     * 获取指定物资时间轴
+     *
+     * @param token
+     * @param assetDetailId
+     * @return
+     * @throws Exception 异常
+     */
+    BaseGenericsResponse<List<EventDTO>> timeline(String token, String assetDetailId) throws Exception;
 }

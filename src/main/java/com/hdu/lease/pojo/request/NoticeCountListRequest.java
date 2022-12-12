@@ -1,6 +1,8 @@
 package com.hdu.lease.pojo.request;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 通知数量
@@ -9,6 +11,8 @@ import lombok.Getter;
  * @date 2022/11/20
  */
 @Getter
+@Setter
+@ToString
 public class NoticeCountListRequest extends BaseRequest{
     /**
      * yyyy-MM-dd查询日期段

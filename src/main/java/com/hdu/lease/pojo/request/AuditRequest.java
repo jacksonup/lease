@@ -11,6 +11,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 public class AuditRequest extends BaseRequest{
     /**
      * 审批单ID

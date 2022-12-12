@@ -2,6 +2,7 @@ package com.hdu.lease.pojo.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 通用请求类
@@ -11,6 +12,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 public class BaseRequest {
     private String token;
 

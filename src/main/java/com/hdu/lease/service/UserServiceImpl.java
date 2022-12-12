@@ -716,16 +716,32 @@ public class UserServiceImpl implements UserService {
         }
 
         // 调用合约方法
-//        auditContract.getListByTypeAndTime(
-//                beginTime,
-//                endTime,
-//                auditPreviewRequest.getTimeRange(),
-//                typeList,
-//                usercontract.getContractAddress(),
-//                assertContract.getContractAddress()).send();
+        List<AuditContract.AuditDTO> auditDTOList = auditContract.getListByTypeAndTime(
+                auditPreviewRequest.getTimeRange(),
+                beginTime,
+                endTime,
+                typeList,
+                usercontract.getContractAddress(),
+                assertContract.getContractAddress()).send();
 
-        //
-        return null;
+        List<AuditPreviewDTO> auditPreviewDTOList = new ArrayList<>();
+
+        for (AuditContract.AuditDTO auditDTO : auditDTOList) {
+            AuditPreviewDTO auditPreviewDTO = new AuditPreviewDTO();
+            auditPreviewDTO.setAuditId(auditDTO.getAuditId());
+            auditPreviewDTO.setStatus(auditDTO.getReviewStatus().intValue());
+            auditPreviewDTO.setHead(auditDTO.getAssetName() + "：" + auditDTO.getBorrowerName());
+
+            // 格式化时间
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDate localDate = LocalDate.parse(auditPreviewRequest.getFrom(), dateTimeFormatter);
+
+            dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            auditPreviewDTO.setTime(localDate.format(dateTimeFormatter));
+            auditPreviewDTOList.add(auditPreviewDTO);
+        }
+         return BaseGenericsResponse.successBaseResp(auditPreviewDTOList);
     }
 
     /**
@@ -770,6 +786,11 @@ public class UserServiceImpl implements UserService {
                 new BigInteger(endTime),
                 false
         ).send();
+
+        if (ObjectUtils.isEmpty(noticeCountsDTO)) {
+            list = Stream.of(0, 0, 0, 0, 0).collect(Collectors.toList());
+            return BaseGenericsResponse.successBaseResp(list);
+        }
 
         // 总未读数
         list.add(noticeCountsDTO.getAllCounts().intValue());
