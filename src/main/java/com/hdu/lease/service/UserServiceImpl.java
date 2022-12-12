@@ -696,10 +696,10 @@ public class UserServiceImpl implements UserService {
 
         // 格式化时间
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime parsedBeginDateTime = LocalDateTime.parse(auditPreviewRequest.getFrom(), formatter);
-        LocalDateTime parsedEndDateTime = LocalDateTime.parse(auditPreviewRequest.getTo(), formatter);
+        LocalDate parsedBeginDateTime = LocalDate.parse(auditPreviewRequest.getFrom(), formatter);
+        LocalDate parsedEndDateTime = LocalDate.parse(auditPreviewRequest.getTo(), formatter);
 
-        formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         BigInteger beginTime = new BigInteger(parsedBeginDateTime.format(formatter));
         BigInteger endTime = new BigInteger(parsedEndDateTime.format(formatter));
