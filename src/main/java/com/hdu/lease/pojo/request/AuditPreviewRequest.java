@@ -1,6 +1,7 @@
 package com.hdu.lease.pojo.request;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 审批预览请求
@@ -9,6 +10,7 @@ import lombok.Getter;
  * @date 2022/11/20
  */
 @Getter
+@Setter
 public class AuditPreviewRequest extends BaseRequest{
     /**
      * yyyy-MM-dd查询日期段

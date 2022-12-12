@@ -695,7 +695,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 格式化时间
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime parsedBeginDateTime = LocalDateTime.parse(auditPreviewRequest.getFrom(), formatter);
         LocalDateTime parsedEndDateTime = LocalDateTime.parse(auditPreviewRequest.getTo(), formatter);
 
