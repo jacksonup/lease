@@ -731,7 +731,7 @@ public class AssetServiceImpl implements AssetService {
         placeAssetContract.update(newPlaceAsset).send();
 
         // 获取仓库名
-        String placeName = placeContract.getById(placeAsset.getPlaceId()).send().getPlaceName();
+        String placeName = placeContract.getById(supplyRequest.getPlaceId()).send().getPlaceName();
 
         HashMap<String, String> map = new HashMap<>(6);
 
@@ -743,7 +743,7 @@ public class AssetServiceImpl implements AssetService {
             // 二维码底部文字
             String bottomContent = assetName + "-" + content + "-" + placeName;
 
-            BufferedImage image = QrCodeUtil.createImage(content,bottomContent, true);
+            BufferedImage image = QrCodeUtil.createImage(content, bottomContent, true);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             try {

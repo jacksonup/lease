@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.List;
 
@@ -299,7 +301,7 @@ public class UserController {
     @ResponseBody
     public void generateQR(@RequestParam("content")String content) throws IOException {
         BufferedImage image;
-        String test = "底部文字" + "-" + "name" + "\r\n" + "aaaaaaa";
+        String test = "底部文字" + "-" + String.valueOf(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli()) + "-name";
         System.out.println(test);
         image = QrCodeUtil.createImage(content, test, true);
 
