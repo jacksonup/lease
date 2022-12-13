@@ -426,10 +426,28 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) throws Exception {
+        // 借用者学号
+        String borrowerAccount = JwtUtils.getTokenInfo(assetBorrowRequest.getToken()).getClaim("account").asString();
+
         // 修改物资明细状态
         AssetDetailContract.AssetDetail assetDetail =
                 assetDetailContract.getByPrimaryKey(assetBorrowRequest.getAssetDetailId()).send();
 
+        // 格式化时间
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String beginTime = localDateTime.format(formatter);
+//
+//        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        localDateTime =
+
+//        AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+//                assetDetail.getAssetDetailId(),
+//                borrowerAccount,
+//                assetDetail.getAssetId(),
+//                assetDetail.getPlaceId(),
+//                new BigInteger(beginTime),
+//        );
 
 
         // 添加借用记录
@@ -984,7 +1002,7 @@ public class AssetServiceImpl implements AssetService {
             newEventDTO.setTime(time);
 
             // 获取事件名
-            String type = event.getTypeAsString();
+            String type = String.valueOf(event.getEventType());
             newEventDTO.setName(eventService.getType(type));
 
             newEventDTO.setContent(event.getContent());

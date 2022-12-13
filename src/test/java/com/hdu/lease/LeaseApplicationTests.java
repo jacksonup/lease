@@ -28,6 +28,7 @@ import org.web3j.tx.gas.StaticGasProvider;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -313,14 +314,6 @@ class LeaseApplicationTests {
 
         } catch (TencentCloudSDKException e) {
             e.printStackTrace();
-        }
-    }
-
-    @Test
-    void test () throws InterruptedException {
-        for (int i = 0; i < 10; i++) {
-            System.out.println(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());
-            Thread.sleep(5);
         }
     }
 }
