@@ -7,6 +7,7 @@ import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
@@ -23,6 +24,7 @@ import java.time.format.DateTimeFormatter;
  * @author chenyb46701
  * @date 2022/12/12
  */
+@Service("eventService")
 public class EventServiceImpl implements EventService{
 
     @Setter(onMethod_ = @Autowired)
