@@ -156,6 +156,4 @@ public class AssetController {
     public BaseGenericsResponse<List<EventDTO>> timeline(String token, String assetDetailId) throws Exception {
         return assetService.timeline(token, assetDetailId);
     }
-
-
 }

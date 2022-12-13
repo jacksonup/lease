@@ -38,6 +38,7 @@ import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -173,7 +174,8 @@ public class AssetServiceImpl implements AssetService {
                 // 生产资产明细
                 for (int j = 0; j < count; j++) {
                     String blankStr = "";
-                    String assetDetailId = UuidUtils.createUuid();
+                    String assetDetailId = String.valueOf(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());
+
                     AssetDetailContract.AssetDetail assetDetail = new AssetDetailContract.AssetDetail(
                             assetDetailId,
                             blankStr,
@@ -187,6 +189,7 @@ public class AssetServiceImpl implements AssetService {
                     assetDetailList.add(assetDetail);
 
                     assetDetailIdList.add(assetDetailId);
+                    Thread.sleep(5);
                 }
                 // 获取place信息
                 PlaceContract.Place place = placeContract.getById(placeId).send();
@@ -627,7 +630,7 @@ public class AssetServiceImpl implements AssetService {
                     new BigInteger(String.valueOf(begin)),
                     new BigInteger(String.valueOf(begin + 9))).send();
 
-            for (AssetDetailContract.AssetDetail assetDetail : allAssetDetailList) {
+            for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
                 DetailsDTO.DetailInfo detailInfo = new DetailsDTO.DetailInfo();
                 detailInfo.setDetailId(assetDetail.getAssetDetailId());
                 detailInfo.setStatus(assetDetail.getCurrentStatus().intValue());
