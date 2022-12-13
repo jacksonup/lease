@@ -64,7 +64,7 @@ public class AssetController {
 
     @PostMapping("/borrow")
     @ResponseBody
-    public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) {
+    public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) throws Exception {
         return assetService.borrow(assetBorrowRequest);
     }
 

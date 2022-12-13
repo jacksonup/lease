@@ -264,8 +264,6 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
-
-
         return BaseGenericsResponse.successBaseResp(map);
     }
 
@@ -427,8 +425,11 @@ public class AssetServiceImpl implements AssetService {
      * @return
      */
     @Override
-    public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) {
+    public BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) throws Exception {
         // 修改物资明细状态
+        AssetDetailContract.AssetDetail assetDetail =
+                assetDetailContract.getByPrimaryKey(assetBorrowRequest.getAssetDetailId()).send();
+
 
 
         // 添加借用记录
@@ -762,9 +763,6 @@ public class AssetServiceImpl implements AssetService {
             placeAssetContract.update(newPlaceAsset).send();
         }
 
-
-
-
         // 获取仓库名
         String placeName = placeContract.getById(supplyRequest.getPlaceId()).send().getPlaceName();
 
@@ -954,7 +952,7 @@ public class AssetServiceImpl implements AssetService {
             );
             assetDetailContract.update(newAssetDetail).send();
 
-//            placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
+            placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
         }
 
         return BaseGenericsResponse.successBaseResp("下架成功");
@@ -970,35 +968,33 @@ public class AssetServiceImpl implements AssetService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
-        List<EventContract.EventDTO> eventDTOList = eventContract.getListByDetailId(assetDetailId,
-                userContract.getContractAddress(),
-                placeContract.getContractAddress()).send();
+        List<EventContract.Event> eventList = eventContract.getListByDetailId2(assetDetailId).send();
 
         List<EventDTO> eventDTOS = new ArrayList<>();
 
-        for (EventContract.EventDTO eventDTO : eventDTOList) {
+        for (EventContract.Event event : eventList) {
             EventDTO newEventDTO = new EventDTO();
 
             // 格式化时间
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            LocalDateTime parsedBeginDateTime = LocalDateTime.parse(String.valueOf(eventDTO.get_event().getCreateTime()), formatter);
+            LocalDateTime parsedBeginDateTime = LocalDateTime.parse(String.valueOf(event.getCreateTime()), formatter);
             formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String time = parsedBeginDateTime.format(formatter);
 
             newEventDTO.setTime(time);
 
             // 获取事件名
-            String type = eventDTO.get_event().getTypeAsString();
+            String type = event.getTypeAsString();
             newEventDTO.setName(eventService.getType(type));
 
-            newEventDTO.setContent(eventDTO.get_event().getContent());
+            newEventDTO.setContent(event.getContent());
 
             // 获取物资最新状态
             AssetDetailContract.AssetDetail assetDetail =
-                    assetDetailContract.getByPrimaryKey(eventDTO.get_event().getAssetDetailId()).send();
+                    assetDetailContract.getByPrimaryKey(event.getAssetDetailId()).send();
             newEventDTO.setStatus(getAssetDetailStatus(String.valueOf(assetDetail.getCurrentStatus())));
-            newEventDTO.setPlace(eventDTO.getPlaceName());
-            newEventDTO.setOperator(eventDTO.getUserName());
+            newEventDTO.setPlace(placeContract.getById(event.getPlaceId()).send().getPlaceName());
+            newEventDTO.setOperator(userContract.getUserInfo(event.getOperatorAccount()).send().getName());
             eventDTOS.add(newEventDTO);
         }
 

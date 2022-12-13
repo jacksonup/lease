@@ -1,12 +1,8 @@
 package com.hdu.lease.pojo.request;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.time.LocalDateTime;
 
 /**
  * 申请借用请求类
@@ -17,17 +13,19 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-public class AssetApplyRequest extends BaseRequest{
+public class AssetApplyRequest {
+    private String token;
+
     private String assetType;
 
     private String placeId;
+
+    private int count;
 
     private String from;
 
     private String to;
 
     private String reason;
-
-    private int count;
 
 }

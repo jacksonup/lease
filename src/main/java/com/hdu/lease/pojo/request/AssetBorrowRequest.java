@@ -12,7 +12,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class AssetBorrowRequest extends BaseRequest{
-    private String assetId;
+    private String assetDetailId;
 
     private String to;
 }

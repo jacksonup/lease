@@ -66,7 +66,7 @@ public interface AssetService {
      * @param assetBorrowRequest
      * @return
      */
-    BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest);
+    BaseGenericsResponse<String> borrow(AssetBorrowRequest assetBorrowRequest) throws Exception;
 
     /**
      * 获取扫码物资信息
