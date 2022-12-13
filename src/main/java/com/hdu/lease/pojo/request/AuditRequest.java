@@ -2,6 +2,7 @@ package com.hdu.lease.pojo.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 审批拒绝请求类

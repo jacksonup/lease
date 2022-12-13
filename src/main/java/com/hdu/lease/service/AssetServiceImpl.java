@@ -18,6 +18,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -64,6 +65,9 @@ public class AssetServiceImpl implements AssetService {
     @Setter(onMethod_ = @Autowired)
     private OssProperties ossProperties;
 
+    @Setter(onMethod_ = @Autowired)
+    private EventService eventService;
+
     private UserContract userContract;
 
     private PlaceContract placeContract;
@@ -75,6 +79,8 @@ public class AssetServiceImpl implements AssetService {
     private AssetDetailContract assetDetailContract;
 
     private AuditContract auditContract;
+
+    private EventContract eventContract;
 
     /**
      * 调用智能合约
@@ -98,6 +104,7 @@ public class AssetServiceImpl implements AssetService {
         Contract placeAssetContractEntity = contractMapper.selectById(4);
         Contract assetDetailContractEntity = contractMapper.selectById(5);
         Contract auditContractEntity = contractMapper.selectById(6);
+        Contract eventContractEntity = contractMapper.selectById(8);
 
         // 加载合约
         userContract = UserContract.load(userContractEntity.getContractAddress(), web3j, credentials, provider);
@@ -117,6 +124,12 @@ public class AssetServiceImpl implements AssetService {
         );
         auditContract = AuditContract.load(
                 auditContractEntity.getContractAddress(),
+                web3j,
+                credentials,
+                provider
+        );
+        eventContract = EventContract.load(
+                eventContractEntity.getContractAddress(),
                 web3j,
                 credentials,
                 provider
@@ -902,8 +915,39 @@ public class AssetServiceImpl implements AssetService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
+        List<EventContract.EventDTO> eventDTOList = eventContract.getListByDetailId(assetDetailId,
+                userContract.getContractAddress(),
+                placeContract.getContractAddress()).send();
 
-        return null;
+        List<EventDTO> eventDTOS = new ArrayList<>();
+
+        for (EventContract.EventDTO eventDTO : eventDTOList) {
+            EventDTO newEventDTO = new EventDTO();
+
+            // 格式化时间
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime parsedBeginDateTime = LocalDateTime.parse(String.valueOf(eventDTO.get_event().getCreateTime()), formatter);
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String time = parsedBeginDateTime.format(formatter);
+
+            newEventDTO.setTime(time);
+
+            // 获取事件名
+            String type = eventDTO.get_event().getTypeAsString();
+            newEventDTO.setName(eventService.getType(type));
+
+            newEventDTO.setContent(eventDTO.get_event().getContent());
+
+            // 获取物资最新状态
+            AssetDetailContract.AssetDetail assetDetail =
+                    assetDetailContract.getByPrimaryKey(eventDTO.get_event().getAssetDetailId()).send();
+            newEventDTO.setStatus(getAssetDetailStatus(String.valueOf(assetDetail.getCurrentStatus())));
+            newEventDTO.setPlace(eventDTO.getPlaceName());
+            newEventDTO.setOperator(eventDTO.getUserName());
+            eventDTOS.add(newEventDTO);
+        }
+
+        return BaseGenericsResponse.successBaseResp(eventDTOS);
     }
 
     /**
@@ -918,5 +962,31 @@ public class AssetServiceImpl implements AssetService {
         assetDTO.setName(asset.getAssetName());
         assetDTO.setValue(asset.getPrice().intValue());
         return assetDTO;
+    }
+
+    /**
+     * 获取当前最新状态
+     *
+     * @param currentStatus
+     * @return
+     */
+    public String getAssetDetailStatus(String currentStatus) {
+        String status = "";
+
+        if (StringUtils.isEmpty(currentStatus)) {
+            return status;
+        }
+
+        switch (currentStatus) {
+            case "0" : status = "可借用"; break;
+            case "1" : status = "使用中"; break;
+            case "2" : status = "审核中"; break;
+            case "3" : status = "丢失"; break;
+            case "4" : status = "损坏"; break;
+            case "5" : status = "已下架"; break;
+            default: status = "";
+        }
+
+        return status;
     }
 }
