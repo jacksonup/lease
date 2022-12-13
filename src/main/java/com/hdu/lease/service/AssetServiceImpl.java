@@ -972,9 +972,9 @@ public class AssetServiceImpl implements AssetService {
                     new BigInteger("0")
             );
             assetDetailContract.update(newAssetDetail).send();
-
-            placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
         }
+
+        placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
 
         return BaseGenericsResponse.successBaseResp("下架成功");
     }
