@@ -49,7 +49,7 @@ public class EventContract extends Contract {
 
     public static final String FUNC_GETEVENTDTO = "getEventDTO";
 
-    public static final String FUNC_GETEVENTTEST = "getEventTest";
+    public static final String FUNC_GETEVENTTEST = "getEventTest"   ;
 
     public static final String FUNC_GETLISTBYDETAILID = "getListByDetailId";
 
