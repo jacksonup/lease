@@ -1015,6 +1015,7 @@ public class UserServiceImpl implements UserService {
         List<Integer> countsList = new ArrayList<>();
         HashMap<Integer, Integer> map = new HashMap<>(6);
         if (CollectionUtils.isEmpty(countsList) || auditList.size() == 0) {
+            countsList = Stream.of(0, 0, 0, 0).collect(Collectors.toList());
             return BaseGenericsResponse.successBaseResp(countsList);
         }
 
