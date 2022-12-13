@@ -718,17 +718,33 @@ public class AssetServiceImpl implements AssetService {
 
         // 补充自提点资产表余量
         PlaceAssetContract.PlaceAsset placeAsset = placeAssetContract.getByAssetIdAndPlaceId(supplyRequest.getAssetId(), supplyRequest.getPlaceId()).send();
-        BigInteger placeAssetCount = placeAsset.getCount().add(new BigInteger(String.valueOf(supplyRequest.getCount())));
 
-        PlaceAssetContract.PlaceAsset newPlaceAsset = new PlaceAssetContract.PlaceAsset(
-                placeAsset.getPlaceAssetId(),
-                supplyRequest.getPlaceId(),
-                supplyRequest.getAssetId(),
-                placeAssetCount,
-                placeAsset.getStatus()
-        );
+        if (ObjectUtils.isEmpty(placeAsset)) {
+            PlaceAssetContract.PlaceAsset newPlaceAsset = new PlaceAssetContract.PlaceAsset(
+                    UuidUtils.createUuid(),
+                    supplyRequest.getPlaceId(),
+                    supplyRequest.getAssetId(),
+                    new BigInteger(String.valueOf(supplyRequest.getCount())),
+                    new BigInteger("0")
+            );
+            List<PlaceAssetContract.PlaceAsset> placeAssetList = new ArrayList<>();
+            placeAssetList.add(newPlaceAsset);
+            placeAssetContract.bindAsset(placeAssetList).send();
+        } else {
+            BigInteger placeAssetCount = placeAsset.getCount().add(new BigInteger(String.valueOf(supplyRequest.getCount())));
 
-        placeAssetContract.update(newPlaceAsset).send();
+            PlaceAssetContract.PlaceAsset newPlaceAsset = new PlaceAssetContract.PlaceAsset(
+                    placeAsset.getPlaceAssetId(),
+                    supplyRequest.getPlaceId(),
+                    supplyRequest.getAssetId(),
+                    placeAssetCount,
+                    placeAsset.getStatus()
+            );
+            placeAssetContract.update(newPlaceAsset).send();
+        }
+
+
+
 
         // 获取仓库名
         String placeName = placeContract.getById(supplyRequest.getPlaceId()).send().getPlaceName();
