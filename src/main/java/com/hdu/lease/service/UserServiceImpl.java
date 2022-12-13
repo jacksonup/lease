@@ -788,9 +788,21 @@ public class UserServiceImpl implements UserService {
         ).send();
 
         if (ObjectUtils.isEmpty(noticeCountsDTO)) {
-            list = Stream.of(0, 0, 0, 0, 0).collect(Collectors.toList());
+            list = Stream.of(0, 0, 0, 0, 0, 0).collect(Collectors.toList());
             return BaseGenericsResponse.successBaseResp(list);
         }
+
+        List<NoticeContract.Notice> noticeList = noticeContract.getListByTimeAndTypeOrIsRead(
+                noticeCountListRequest.getTimeRange(),
+                new BigInteger(beginTime),
+                new BigInteger(endTime),
+                new BigInteger("-1"),
+                true,
+                false
+        ).send();
+
+        // 所有总数
+        list.add(noticeList.size());
 
         // 总未读数
         list.add(noticeCountsDTO.getAllCounts().intValue());
