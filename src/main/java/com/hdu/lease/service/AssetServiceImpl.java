@@ -945,9 +945,10 @@ public class AssetServiceImpl implements AssetService {
         }
 
         List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(
-                shelfOperateRequest.getAssetId(),
                 shelfOperateRequest.getPlaceId(),
+                shelfOperateRequest.getAssetId(),
                 new BigInteger("-1")).send();
+
 
         // 初始化set
         Set<Integer> set = Stream.of(0, 3, 4).collect(Collectors.toCollection(HashSet::new));
