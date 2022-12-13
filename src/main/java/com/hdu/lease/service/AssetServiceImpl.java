@@ -719,7 +719,7 @@ public class AssetServiceImpl implements AssetService {
         // 补充自提点资产表余量
         PlaceAssetContract.PlaceAsset placeAsset = placeAssetContract.getByAssetIdAndPlaceId(supplyRequest.getAssetId(), supplyRequest.getPlaceId()).send();
 
-        if (ObjectUtils.isEmpty(placeAsset)) {
+        if (placeAsset.placeId.equals("")) {
             PlaceAssetContract.PlaceAsset newPlaceAsset = new PlaceAssetContract.PlaceAsset(
                     UuidUtils.createUuid(),
                     supplyRequest.getPlaceId(),
