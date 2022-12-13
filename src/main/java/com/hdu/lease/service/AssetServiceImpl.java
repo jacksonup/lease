@@ -248,15 +248,15 @@ public class AssetServiceImpl implements AssetService {
 
             // 获取绑定的自提点
             List<PlaceAssetContract.PlaceInfo> placeIdNameList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
-            HashMap<String, String> map = new HashMap<>(6);
+            List<String> list = new ArrayList<>();
 
             if (!(CollectionUtils.isEmpty(placeIdNameList) || placeIdNameList.size() == 0)) {
                 for (PlaceAssetContract.PlaceInfo placeIdName : placeIdNameList) {
-                    map.put(placeIdName.getPlaceId(), placeIdName.getPlaceName());
+                    list.add(placeIdName.getPlaceName());
                 }
             }
 
-            assetDTO.setPlaceList(map);
+            assetDTO.setPlaceList(list);
             assetDTO.setAssetId(assetList.get(i).getAssetId());
             assetDTOList.add(assetDTO);
         }
