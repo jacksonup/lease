@@ -27,7 +27,7 @@ public class AssetDTO {
 
     private Boolean apply;
 
-    private Map<String, String> placeList;
+    private List<String> placeList;
 
     private Integer value;
 }

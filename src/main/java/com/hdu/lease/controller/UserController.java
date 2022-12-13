@@ -276,7 +276,7 @@ public class UserController {
         return userService.getNoRole2s(token, from);
     }
 
-    @GetMapping("/grantPlaceManager")
+    @PostMapping("/grantPlaceManager")
     @ResponseBody
     public BaseGenericsResponse<String> grantPlaceManager(GrantPlaceManagerDTO grantPlaceManagerDTO) throws Exception {
         return userService.grantPlaceManager(grantPlaceManagerDTO);
