@@ -6,6 +6,7 @@ import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
+import com.hdu.lease.pojo.event.CreateParamEvent;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
@@ -142,6 +143,9 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<Map<String, String>> create(CreateAssertRequest createAssertRequest) throws Exception {
+        // 取出account
+        String account = JwtUtils.getTokenInfo(createAssertRequest.getToken()).getClaim("account").asString();
+
         // 生成资产唯一标识
         String assetId = UuidUtils.createUuid();
 
@@ -222,11 +226,25 @@ public class AssetServiceImpl implements AssetService {
 
         // 生成二维码
         for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
-            // 二维码内容
-            String content = assetDetail.getAssetDetailId();
-
             // 获取placeName
             String placeName = placeContract.getById(assetDetail.getPlaceId()).send().getPlaceName();
+
+            // 创建事件参数
+            CreateParamEvent createParamEvent = new CreateParamEvent();
+            createParamEvent.setIsBorrow(createAssertRequest.getApply());
+            createParamEvent.setAssetName(createAssertRequest.getName());
+            createParamEvent.setPlaceName(placeName);
+            createParamEvent.setValue(String.valueOf(createAssertRequest.getValue()));
+
+            // 生成事件
+            eventService.insert("2",
+                    assetDetail.getAssetDetailId(),
+                    assetDetail.getPlaceId(),
+                    account,
+                    createParamEvent.toString());
+
+            // 二维码内容
+            String content = assetDetail.getAssetDetailId();
 
             // 二维码底部文字
             String bottomContent = createAssertRequest.getName() + "-" + content + "-" + placeName;
@@ -245,6 +263,8 @@ public class AssetServiceImpl implements AssetService {
                 throw new UncheckedIOException(ioe);
             }
         }
+
+
 
         return BaseGenericsResponse.successBaseResp(map);
     }
@@ -290,7 +310,6 @@ public class AssetServiceImpl implements AssetService {
         if (!userService.judgeRole(token, 1)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
         }
-
 
         return null;
     }
@@ -876,7 +895,7 @@ public class AssetServiceImpl implements AssetService {
                         shelfOperateRequest.getPlaceId(),
                         assetDetail.getBeginTime(),
                         assetDetail.getEndTime(),
-                        new BigInteger("5"),
+                        new BigInteger("0"),
                         assetDetail.getStatus()
                 );
                 assetDetailContract.update(newAssetDetail).send();
@@ -935,7 +954,7 @@ public class AssetServiceImpl implements AssetService {
             );
             assetDetailContract.update(newAssetDetail).send();
 
-            placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId()).send();
+//            placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
         }
 
         return BaseGenericsResponse.successBaseResp("下架成功");

@@ -17,6 +17,8 @@ import java.util.Map;
 @Setter
 @ToString
 public class CreateAssertRequest {
+    private String token;
+
     /**
      * 资产名
      */
