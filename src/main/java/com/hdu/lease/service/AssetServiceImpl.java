@@ -944,12 +944,15 @@ public class AssetServiceImpl implements AssetService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
         }
 
-        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getList(shelfOperateRequest.getAssetId()).send();
+        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(
+                shelfOperateRequest.getAssetId(),
+                shelfOperateRequest.getPlaceId(),
+                new BigInteger("-1")).send();
 
         // 初始化set
         Set<Integer> set = Stream.of(0, 3, 4).collect(Collectors.toCollection(HashSet::new));
         for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
-            // 校验状态
+            // 1、校验状态
             if (!set.contains(assetDetail.getCurrentStatus().intValue())) {
                 return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "下架失败,存在明细物资不符合下架状态");
             }
