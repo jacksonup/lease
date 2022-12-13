@@ -28,7 +28,7 @@ public class AssetController {
 
     @PostMapping("/create")
     @ResponseBody
-    public BaseGenericsResponse<Map<String, List<String>>> create(CreateAssertRequest createAssertRequest) throws Exception {
+    public BaseGenericsResponse<Map<String, String>> create(CreateAssertRequest createAssertRequest) throws Exception {
         return assetService.create(createAssertRequest);
     }
 

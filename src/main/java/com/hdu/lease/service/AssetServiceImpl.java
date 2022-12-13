@@ -141,7 +141,7 @@ public class AssetServiceImpl implements AssetService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<Map<String, List<String>>> create(CreateAssertRequest createAssertRequest) throws Exception {
+    public BaseGenericsResponse<Map<String, String>> create(CreateAssertRequest createAssertRequest) throws Exception {
         // 生成资产唯一标识
         String assetId = UuidUtils.createUuid();
 
@@ -159,7 +159,7 @@ public class AssetServiceImpl implements AssetService {
         List<PlaceAssetContract.PlaceAsset> placeAssetList = new ArrayList<>();
         List<Map<String, Integer>> list = createAssertRequest.getPlaceList();
         List<AssetDetailContract.AssetDetail> assetDetailList = new ArrayList<>();
-        Map<String, List<String>> detailAssetIds = new HashMap<>(6);
+
         String placeId = "";
         // count:自提点绑定余量; sum:资产总量
         int count = 0, sum = 0;
@@ -170,7 +170,6 @@ public class AssetServiceImpl implements AssetService {
                 sum += count;
                 placeId = key;
 
-                List<String> assetDetailIdList = new ArrayList<>();
                 // 生产资产明细
                 for (int j = 0; j < count; j++) {
                     String blankStr = "";
@@ -187,13 +186,8 @@ public class AssetServiceImpl implements AssetService {
                             new BigInteger("0")
                     );
                     assetDetailList.add(assetDetail);
-
-                    assetDetailIdList.add(assetDetailId);
                     Thread.sleep(5);
                 }
-                // 获取place信息
-                PlaceContract.Place place = placeContract.getById(placeId).send();
-                detailAssetIds.put(place.getPlaceName(), assetDetailIdList);
             }
 
             // 自提点和资产绑定
@@ -224,7 +218,35 @@ public class AssetServiceImpl implements AssetService {
         assertContract.createAsset(asset).send();
         assetDetailContract.insertAssetDetail(assetDetailList).send();
 
-        return BaseGenericsResponse.successBaseResp(detailAssetIds);
+        HashMap<String, String> map = new HashMap<>(6);
+
+        // 生成二维码
+        for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            // 二维码内容
+            String content = assetDetail.getAssetDetailId();
+
+            // 获取placeName
+            String placeName = placeContract.getById(assetDetail.getPlaceId()).send().getPlaceName();
+
+            // 二维码底部文字
+            String bottomContent = createAssertRequest.getName() + "-" + content + "-" + placeName;
+
+            BufferedImage image = QrCodeUtil.createImage(content, bottomContent, true);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            try {
+                ImageIO.write(image, "png", byteArrayOutputStream);
+
+                // 二维码转base64
+                String img = "data:image/png;base64," +
+                        Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+                map.put(bottomContent, img);
+            } catch (final IOException ioe) {
+                throw new UncheckedIOException(ioe);
+            }
+        }
+
+        return BaseGenericsResponse.successBaseResp(map);
     }
 
     /**
@@ -658,7 +680,7 @@ public class AssetServiceImpl implements AssetService {
         // 生成明细物资
         for (int j = 0; j < supplyRequest.getCount(); j++) {
             String blankStr = "";
-            String assetDetailId = UuidUtils.createUuid();
+            String assetDetailId = String.valueOf(LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli());;
             AssetDetailContract.AssetDetail assetDetail = new AssetDetailContract.AssetDetail(
                     assetDetailId,
                     blankStr,
@@ -670,6 +692,7 @@ public class AssetServiceImpl implements AssetService {
                     new BigInteger("0")
             );
             assetDetailList.add(assetDetail);
+            Thread.sleep(5);
         }
 
         assetDetailContract.insertAssetDetail(assetDetailList).send();
@@ -718,7 +741,7 @@ public class AssetServiceImpl implements AssetService {
             String content = assetDetail.getAssetDetailId();
 
             // 二维码底部文字
-            String bottomContent = assetName + "-" + placeName + "\r\n" + content;
+            String bottomContent = assetName + "-" + content + "-" + placeName;
 
             BufferedImage image = QrCodeUtil.createImage(content,bottomContent, true);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

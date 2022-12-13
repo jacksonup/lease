@@ -22,7 +22,7 @@ public interface AssetService {
      * @param createAssertRequest
      * @return
      */
-    BaseGenericsResponse<Map<String, List<String>>> create(CreateAssertRequest createAssertRequest) throws Exception;
+    BaseGenericsResponse<Map<String, String>> create(CreateAssertRequest createAssertRequest) throws Exception;
 
     /**
      * 获取指定资产信息
