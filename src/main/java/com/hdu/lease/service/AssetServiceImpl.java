@@ -7,6 +7,7 @@ import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.pojo.event.CreateParamEvent;
+import com.hdu.lease.pojo.event.ShelfOperateParamEvent;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
@@ -922,19 +923,19 @@ public class AssetServiceImpl implements AssetService {
                 );
                 assetDetailContract.update(newAssetDetail).send();
             }
-
-            // 插入绑定物资信息
-            PlaceAssetContract.PlaceAsset placeAsset = new PlaceAssetContract.PlaceAsset(
-                    UuidUtils.createUuid(),
-                    shelfOperateRequest.getPlaceId(),
-                    shelfOperateRequest.getAssetId(),
-                    new BigInteger(String.valueOf(count)),
-                    new BigInteger("0")
-            );
-
-            List<PlaceAssetContract.PlaceAsset> placeAssetList = Stream.of(placeAsset).collect(Collectors.toList());
-            placeAssetContract.bindAsset(placeAssetList).send();
         }
+
+        // 插入绑定物资信息
+        PlaceAssetContract.PlaceAsset placeAsset = new PlaceAssetContract.PlaceAsset(
+                UuidUtils.createUuid(),
+                shelfOperateRequest.getPlaceId(),
+                shelfOperateRequest.getAssetId(),
+                new BigInteger(String.valueOf(count)),
+                new BigInteger("0")
+        );
+
+        List<PlaceAssetContract.PlaceAsset> placeAssetList = Stream.of(placeAsset).collect(Collectors.toList());
+        placeAssetContract.bindAsset(placeAssetList).send();
 
         return BaseGenericsResponse.successBaseResp("上架成功");
     }
@@ -944,6 +945,9 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<String> undercarriage(ShelfOperateRequest shelfOperateRequest) throws Exception {
+        // 取出account
+        String account = JwtUtils.getTokenInfo(shelfOperateRequest.getToken()).getClaim("account").asString();
+
         // 判断权限
         if (!userService.judgeRole(shelfOperateRequest.getToken(), 2)) {
             log.info("权限不足");
@@ -979,11 +983,23 @@ public class AssetServiceImpl implements AssetService {
                     new BigInteger("0")
             );
             assetDetailContract.update(newAssetDetail).send();
+
+            // 下架事件
+            ShelfOperateParamEvent shelfOperateParamEvent = new ShelfOperateParamEvent();
+            shelfOperateParamEvent.setAssetName(assertContract.getById(assetDetail.getAssetId()).send().getAssetName());
+            shelfOperateParamEvent.setType(2);
+            shelfOperateParamEvent.setManagerName(userContract.getUserInfo(account).send().getName());
+            shelfOperateParamEvent.setPlaceName(placeContract.getById(shelfOperateRequest.getPlaceId()).send().getPlaceName());
+
+            eventService.insert("4",
+                    assetDetail.getAssetDetailId(),
+                    assetDetail.getPlaceId(),
+                    account,
+                    shelfOperateParamEvent.toString());
         }
 
         placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
 
-        // 下架事件
 
 
 
