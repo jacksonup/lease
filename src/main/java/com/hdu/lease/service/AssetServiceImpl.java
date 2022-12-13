@@ -247,16 +247,9 @@ public class AssetServiceImpl implements AssetService {
             assetDTO.setRest(assetDetailList.size());
 
             // 获取绑定的自提点
-            List<PlaceAssetContract.PlaceInfo> placeIdNameList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
-            List<String> list = new ArrayList<>();
+            List<String> placeNameList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
 
-            if (placeIdNameList.size() > 0) {
-                for (PlaceAssetContract.PlaceInfo placeInfo : placeIdNameList) {
-                    list.add(placeInfo.getPlaceName());
-                }
-            }
-
-            assetDTO.setPlaceList(list);
+            assetDTO.setPlaceList(placeNameList);
             assetDTO.setAssetId(assetList.get(i).getAssetId());
             assetDTOList.add(assetDTO);
         }
