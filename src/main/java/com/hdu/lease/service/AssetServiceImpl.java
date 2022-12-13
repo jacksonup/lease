@@ -250,9 +250,9 @@ public class AssetServiceImpl implements AssetService {
             List<PlaceAssetContract.PlaceInfo> placeIdNameList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
             List<String> list = new ArrayList<>();
 
-            if (!(CollectionUtils.isEmpty(placeIdNameList) || placeIdNameList.size() == 0)) {
-                for (PlaceAssetContract.PlaceInfo placeIdName : placeIdNameList) {
-                    list.add(placeIdName.getPlaceName());
+            if (placeIdNameList.size() > 0) {
+                for (PlaceAssetContract.PlaceInfo placeInfo : placeIdNameList) {
+                    list.add(placeInfo.getPlaceName());
                 }
             }
 
@@ -425,6 +425,7 @@ public class AssetServiceImpl implements AssetService {
 
         // 2.判断当前状态
         int currentStatus = assetDetail.getCurrentStatus().intValue();
+        scannedAssetDTO.setStatus(currentStatus);
 
         // 校验状态
         if (currentStatus == 1) {
@@ -723,7 +724,7 @@ public class AssetServiceImpl implements AssetService {
             // 二维码底部文字
             String bottomContent = assetName + "-" + placeName + "\r\n" + content;
 
-            BufferedImage image = QrCodeUtil.createImage(content, bottomContent, true);
+            BufferedImage image = QrCodeUtil.createImage(content,bottomContent, true);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             try {

@@ -295,4 +295,26 @@ public class UserController {
         return userService.auditCounts(auditCountsRequest);
     }
 
+    @GetMapping(value = "/generate")
+    @ResponseBody
+    public void generateQR(@RequestParam("content")String content) throws IOException {
+        BufferedImage image;
+        String test = "底部文字" + "-" + "name" + "\r\n" + "aaaaaaa";
+        System.out.println(test);
+        image = QrCodeUtil.createImage(content, test, true);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+        try
+        {
+            ImageIO.write(image, "png", os);
+            String img = "data:image/png;base64,"+ Base64.getEncoder().encodeToString(os.toByteArray());
+            System.out.println(img);
+        }
+        catch (final IOException ioe)
+        {
+            throw new UncheckedIOException(ioe);
+        }
+
+    }
 }

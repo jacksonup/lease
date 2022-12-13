@@ -6,13 +6,18 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import sun.font.FontDesignMetrics;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * 二维码工具类
@@ -43,16 +48,19 @@ public class QrCodeUtil {
         int width = bitMatrix.getWidth();
         int height = bitMatrix.getHeight();
         int tempHeight = height;
+
         if (needCompress) {
-            tempHeight += 30;
+            tempHeight += 80;
         }
 
         BufferedImage image = new BufferedImage(width, tempHeight, BufferedImage.TYPE_INT_RGB);
+
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 image.setRGB(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
             }
         }
+
 
         //添加底部文字
         if (needCompress) {
@@ -97,7 +105,7 @@ public class QrCodeUtil {
      * @param declareText 文字本文
      */
     private static void addFontImage(BufferedImage source, String declareText) {
-        BufferedImage textImage = textToImage(declareText, QRCODE_SIZE, 50, 16);
+        BufferedImage textImage = textToImage(declareText, QRCODE_SIZE, 100, 16);
         Graphics2D graph = source.createGraphics();
         //开启文字抗锯齿
         graph.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -109,5 +117,4 @@ public class QrCodeUtil {
         graph.drawImage(src, 0, QRCODE_SIZE - 20, width, height, null);
         graph.dispose();
     }
-
 }
