@@ -25,7 +25,7 @@ public class QrCodeUtil {
     private static final String CHARSET = "utf-8";
 
     // 二维码尺寸
-    private static final int QRCODE_SIZE = 300;
+    private static final int QRCODE_SIZE = 400;
 
     public static BufferedImage createImage(String content, String bottomContent, Boolean needCompress) {
         Hashtable<EncodeHintType, Object> hints = new Hashtable<EncodeHintType, Object>();

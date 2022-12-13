@@ -721,7 +721,7 @@ public class AssetServiceImpl implements AssetService {
             String content = assetDetail.getAssetDetailId();
 
             // 二维码底部文字
-            String bottomContent = assetName + "-" + content + "-" + placeName;
+            String bottomContent = assetName + "-" + placeName + "\r\n" + content;
 
             BufferedImage image = QrCodeUtil.createImage(content, bottomContent, true);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
