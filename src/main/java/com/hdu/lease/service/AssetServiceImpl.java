@@ -870,7 +870,10 @@ public class AssetServiceImpl implements AssetService {
         }
 
         // 获取指定物资的空闲状态的明细物资
-        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(shelfOperateRequest.getAssetId(), new BigInteger("0")).send();
+        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(
+                shelfOperateRequest.getPlaceId(),
+                shelfOperateRequest.getAssetId(),
+                new BigInteger("0")).send();
 
         // 统计count
         int count = 0;
@@ -895,7 +898,10 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
-        assetDetailList = assetDetailContract.getListByStatus(shelfOperateRequest.getAssetId(), new BigInteger("5")).send();
+        assetDetailList = assetDetailContract.getStatusListByPlaceId(
+                shelfOperateRequest.getPlaceId(),
+                shelfOperateRequest.getAssetId(),
+                new BigInteger("5")).send();
 
         if (CollectionUtils.isEmpty(assetDetailList) && assetDetailList.size() == 0) {
             log.info("下架状态的明细物资列表为空");
@@ -976,6 +982,10 @@ public class AssetServiceImpl implements AssetService {
         }
 
         placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
+
+        // 下架事件
+
+
 
         return BaseGenericsResponse.successBaseResp("下架成功");
     }
