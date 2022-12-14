@@ -795,8 +795,8 @@ public class UserServiceImpl implements UserService {
 
         formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-        BigInteger beginTime = new BigInteger(parsedBeginDateTime.format(formatter));
-        BigInteger endTime = new BigInteger(parsedEndDateTime.format(formatter));
+        BigInteger beginTime = new BigInteger(parsedBeginDateTime.format(formatter) + "000000");
+        BigInteger endTime = new BigInteger(parsedEndDateTime.format(formatter) + "000000");
 
         List<BigInteger> typeList = new ArrayList<>();
 
