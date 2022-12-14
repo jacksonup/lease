@@ -275,10 +275,6 @@ public class AssetServiceImpl implements AssetService {
      */
     @Override
     public BaseGenericsResponse<List<AssetDTO>> getList(String token, String placeId) throws Exception {
-        // 判断角色
-        if (!userService.judgeRoles(token, 1, 2)) {
-            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "角色权限不足");
-        }
 
         // 获取资产信息
         List<AssetContract.Asset> assetList = assertContract.getAssetListPlaceId(placeAssetContract.getContractAddress(), placeId).send();
