@@ -4,6 +4,8 @@ import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
+import com.hdu.lease.pojo.event.ApplyParamEvent;
+import com.hdu.lease.pojo.event.AuditParamEvent;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.LoginInfoResponse;
@@ -58,6 +60,9 @@ public class UserServiceImpl implements UserService {
 
     @Setter(onMethod_ = @Autowired)
     private ContractMapper contractMapper;
+
+    @Setter(onMethod_ = @Autowired)
+    private EventService eventService;
 
     private UserContract usercontract;
 
@@ -535,6 +540,9 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
 
+        // 获取明细物资Id
+        String assetDetailId = audit.getReviewReason();
+
         // 获取当前时间
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -575,6 +583,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse<String> agree(AuditRequest auditRequest) throws Exception {
+        String account = JwtUtils.getTokenInfo(auditRequest.getToken()).getClaim("account").asString();
         // 获取审批单
         if (StringUtils.isEmpty(auditRequest.getAuditId())) {
             log.error("审批单号为空");
@@ -625,7 +634,18 @@ public class UserServiceImpl implements UserService {
             assetDetailContract.update(newAssetDetail).send();
 
             // 事件
+            AuditParamEvent auditParamEvent = new AuditParamEvent();
+            auditParamEvent.setAuditId(auditRequest.getAuditId());
+            auditParamEvent.setManageName(usercontract.getUserInfo(account).send().getName());
+            auditParamEvent.setType(1);
+            auditParamEvent.setUserName(usercontract.getUserInfo(audit.getBorrowerAccount()).send().getName());
 
+            eventService.insert("9",
+                    assetDetail.getAssetDetailId(),
+                    assetDetail.getPlaceId(),
+                    account,
+                    auditParamEvent.toString()
+            );
         }
 
         // 获取当前时间

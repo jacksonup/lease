@@ -344,7 +344,7 @@ public class AssetServiceImpl implements AssetService {
         eventService.insert("5",
                 assetDetail.getAssetDetailId(),
                 assetDetail.getPlaceId(),
-                token,
+                account,
                 backParamEvent.toString()
         );
 
@@ -447,8 +447,12 @@ public class AssetServiceImpl implements AssetService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "余量不足");
         }
         StringBuilder assetDetailIds = new StringBuilder();
+        int count = 0;
         // 修改明细物资状态
         for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            if (count++ == assetApplyRequest.getCount()) {
+                break;
+            }
             // 生成明细Id
             assetDetailIds.append(assetDetail.getAssetDetailId()).append("#");
 
@@ -470,7 +474,8 @@ public class AssetServiceImpl implements AssetService {
             ApplyParamEvent applyParamEvent = new ApplyParamEvent();
             applyParamEvent.setCount(assetApplyRequest.getCount());
             applyParamEvent.setApplyName(userContract.getUserInfo(borrowerAccount).send().getName());
-            applyParamEvent.setTime(localDateTime.format(formatter));
+            applyParamEvent.setTime(nowTime);
+            applyParamEvent.setAssetName(assertContract.getById(assetDetail.getAssetId()).send().getAssetName());
             applyParamEvent.setPlaceName(placeContract.getById(assetApplyRequest.getPlaceId()).send().getPlaceName());
 
             eventService.insert("8",
