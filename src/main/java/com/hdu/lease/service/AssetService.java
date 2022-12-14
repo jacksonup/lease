@@ -37,10 +37,10 @@ public interface AssetService {
      * 收回物资
      *
      * @param token
-     * @param assetId
+     * @param detailId
      * @return
      */
-    BaseGenericsResponse<String> back(String token, String assetId) throws Exception;
+    BaseGenericsResponse<String> back(String token, String detailId) throws Exception;
 
     /**
      * 上传图片

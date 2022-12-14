@@ -46,8 +46,8 @@ public class AssetController {
 
     @PostMapping("/back")
     @ResponseBody
-    public BaseGenericsResponse<String> back(String token, String assetId) throws Exception {
-        return assetService.back(token, assetId);
+    public BaseGenericsResponse<String> back(String token, String detailId) throws Exception {
+        return assetService.back(token, detailId);
     }
 
     @PostMapping("/uploadPic")

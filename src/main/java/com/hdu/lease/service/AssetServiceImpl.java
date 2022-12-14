@@ -281,12 +281,16 @@ public class AssetServiceImpl implements AssetService {
         List<AssetDTO> assetDTOList = new ArrayList<>();
 
         for (int i = 0; i < assetList.size(); i++) {
+            // 获取assetId对应的余量
+            int loseCount = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("3")).send().size();
+            int allCount = assetDetailContract.getList(assetList.get(i).getAssetId()).send().size();
+
             // 获取可用余量
             List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(placeId,
                     assetList.get(i).getAssetId(),
                     new BigInteger("0")).send();
             AssetDTO assetDTO = one(assetList.get(i));
-            assetDTO.setRest(assetDetailList.size());
+            assetDTO.setRest(allCount - loseCount);
 
             // 获取绑定的自提点
             List<String> placeNameList = placeAssetContract.getPlaceList(placeContract.getContractAddress(), assetList.get(i).getAssetId()).send();
@@ -294,13 +298,9 @@ public class AssetServiceImpl implements AssetService {
             assetDTO.setPlaceList(placeNameList);
             assetDTO.setAssetId(assetList.get(i).getAssetId());
 
-            // 获取assetId对应的余量
-            int damageCount = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("3")).send().size();
-            int allCount = assetDetailContract.getList(assetList.get(i).getAssetId()).send().size();
-            assetDTO.setFree(allCount - damageCount);
+            assetDTO.setFree(assetDetailList.size());
             assetDTOList.add(assetDTO);
         }
-
 
         return BaseGenericsResponse.successBaseResp(assetDTOList);
     }
@@ -309,12 +309,28 @@ public class AssetServiceImpl implements AssetService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> back(String token, String assetId) throws Exception {
+    public BaseGenericsResponse<String> back(String token, String detailId) throws Exception {
         if (!userService.judgeRole(token, 1)) {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
         }
 
-        return null;
+        AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(detailId).send();
+
+        String blankStr = "";
+        AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                assetDetail.getAssetDetailId(),
+                blankStr,
+                assetDetail.getAssetId(),
+                assetDetail.getPlaceId(),
+                blankStr,
+                blankStr,
+                new BigInteger("0"),
+                new BigInteger("0")
+        );
+
+        assetDetailContract.update(newAssetDetail).send();
+
+        return BaseGenericsResponse.successBaseResp("收回物资成功");
     }
 
     /**
