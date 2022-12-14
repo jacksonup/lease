@@ -511,7 +511,7 @@ public class AssetServiceImpl implements AssetService {
         // 事件
         BorrowParamEvent borrowParamEvent = new BorrowParamEvent();
         borrowParamEvent.setBorrowName(userContract.getUserInfo(borrowerAccount).send().getName());
-        borrowParamEvent.setTo(endTime);
+        borrowParamEvent.setTo(assetBorrowRequest.getTo());
         borrowParamEvent.setAssetName(assertContract.getById(assetDetail.getAssetId()).send().getAssetName());
 
         eventService.insert("7",
@@ -1068,8 +1068,6 @@ public class AssetServiceImpl implements AssetService {
         placeAssetContract.deleteByAssetId(shelfOperateRequest.getAssetId(), shelfOperateRequest.getPlaceId()).send();
 
 
-
-
         return BaseGenericsResponse.successBaseResp("下架成功");
     }
 
@@ -1087,7 +1085,8 @@ public class AssetServiceImpl implements AssetService {
 
         List<EventDTO> eventDTOS = new ArrayList<>();
 
-        for (EventContract.Event event : eventList) {
+        for (int i = eventList.size() - 1; i >= 0; i--) {
+            EventContract.Event event = eventList.get(i);
             EventDTO newEventDTO = new EventDTO();
 
             // 格式化时间
@@ -1107,7 +1106,7 @@ public class AssetServiceImpl implements AssetService {
             // 获取物资最新状态
             AssetDetailContract.AssetDetail assetDetail =
                     assetDetailContract.getByPrimaryKey(event.getAssetDetailId()).send();
-            newEventDTO.setStatus(getAssetDetailStatus(String.valueOf(assetDetail.getCurrentStatus())));
+            newEventDTO.setStatus(getAssetDetailStatus(String.valueOf(event.getStatus())));
             newEventDTO.setPlace(placeContract.getById(event.getPlaceId()).send().getPlaceName());
             newEventDTO.setOperator(userContract.getUserInfo(event.getOperatorAccount()).send().getName());
             eventDTOS.add(newEventDTO);

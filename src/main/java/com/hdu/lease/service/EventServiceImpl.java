@@ -6,6 +6,7 @@ import com.hdu.lease.pojo.entity.Contract;
 import com.hdu.lease.property.ContractProperties;
 import com.hdu.lease.utils.UuidUtils;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
@@ -35,6 +36,8 @@ public class EventServiceImpl implements EventService{
 
     private EventContract eventContract;
 
+    private AssetDetailContract assetDetailContract;
+
     /**
      * 调用智能合约
      */
@@ -52,10 +55,16 @@ public class EventServiceImpl implements EventService{
 
         // 取合约地址
         Contract eventContractEntity = contractMapper.selectById(8);
+        Contract assetDetailContractEntity = contractMapper.selectById(5);
 
         // 加载合约
         eventContract = EventContract.load(eventContractEntity.getContractAddress(), web3j, credentials, provider);
-
+        assetDetailContract = AssetDetailContract.load(
+                assetDetailContractEntity.getContractAddress(),
+                web3j,
+                credentials,
+                provider
+        );
     }
 
     /**
@@ -80,7 +89,8 @@ public class EventServiceImpl implements EventService{
                 placeId,
                 operatorAccount,
                 new BigInteger(localDateTime.format(formatter)),
-                content
+                content,
+                assetDetailContract.getByPrimaryKey(assetDetailId).send().getCurrentStatus()
         );
 
         eventContract.insert(event).send();
@@ -110,6 +120,4 @@ public class EventServiceImpl implements EventService{
         }
         return eventStatus;
     }
-
-
 }
