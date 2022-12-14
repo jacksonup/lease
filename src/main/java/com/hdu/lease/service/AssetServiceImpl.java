@@ -498,7 +498,7 @@ public class AssetServiceImpl implements AssetService {
                 new BigInteger("1"),
                 assetDetailIds.toString(),
                 new BigInteger(nowTime),
-                new BigInteger("")
+                new BigInteger("0")
         );
 
         // 添加审批记录
@@ -748,9 +748,46 @@ public class AssetServiceImpl implements AssetService {
      * {@inheritDoc}
      */
     @Override
-    public BaseGenericsResponse<String> updateStatus(UpdateStatusRequest updateStatusRequest) {
+    public BaseGenericsResponse<String> updateStatus(UpdateStatusRequest updateStatusRequest) throws Exception {
+        String account = JwtUtils.getTokenInfo(updateStatusRequest.getToken()).getClaim("account").asString();
 
-        return null;
+        // 判断权限
+        if (!userService.judgeRoles(updateStatusRequest.getToken(), 1, 2)) {
+            log.info("权限不足");
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "权限不足");
+        }
+
+        AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(updateStatusRequest.getDetailId()).send();
+
+        String blankStr = "";
+        AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                assetDetail.getAssetDetailId(),
+                blankStr,
+                assetDetail.getAssetId(),
+                assetDetail.getPlaceId(),
+                blankStr,
+                blankStr,
+                new BigInteger(String.valueOf(updateStatusRequest.getStatus())),
+                new BigInteger("0")
+        );
+
+        assetDetailContract.update(newAssetDetail).send();
+
+        // 事件
+        UpdateStatusParamEvent updateStatusParamEvent = new UpdateStatusParamEvent();
+        updateStatusParamEvent.setPlaceName(placeContract.getById(assetDetail.getPlaceId()).send().getPlaceName());
+        updateStatusParamEvent.setAssetName(assertContract.getById(assetDetail.getAssetId()).send().getAssetName());
+        updateStatusParamEvent.setManageName(userContract.getUserInfo(account).send().getName());
+        updateStatusParamEvent.setReason(updateStatusRequest.getReason());
+        updateStatusParamEvent.setStatus(updateStatusRequest.getStatus());
+
+        eventService.insert("1",
+                assetDetail.getAssetDetailId(),
+                assetDetail.getPlaceId(),
+                account,
+                updateStatusParamEvent.toString());
+
+        return BaseGenericsResponse.successBaseResp("更新成功");
     }
 
     /**

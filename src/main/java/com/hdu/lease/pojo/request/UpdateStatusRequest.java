@@ -18,5 +18,5 @@ public class UpdateStatusRequest extends BaseRequest{
 
     private String reason;
 
-    private String status;
+    private int status;
 }
