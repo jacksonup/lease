@@ -517,6 +517,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BaseGenericsResponse<String> reject(AuditRequest auditRequest) throws Exception {
+        String account = JwtUtils.getTokenInfo(auditRequest.getToken()).getClaim("account").asString();
         log.info("驳回申请流程中...");
         // 获取审批单
         if (StringUtils.isEmpty(auditRequest.getAuditId())) {
@@ -540,8 +541,50 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
 
-        // 获取明细物资Id
-        String assetDetailId = audit.getReviewReason();
+        // 获取明细物资ID
+        String assetDetailIds = audit.getReviewReason();
+
+        if (StringUtils.isEmpty(assetDetailIds)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "明细物资列表异常，审批失败");
+        }
+        String[] split = assetDetailIds.split("#");
+        log.info("明细物资ID{}", Arrays.toString(split));
+
+        String blankStr = "";
+        // 更新明细物资状态
+        for (String assetDetailId : split) {
+            AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(assetDetailId).send();
+
+            // 更新明细物资状态
+            AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                    assetDetail.getAssetDetailId(),
+                    blankStr,
+                    assetDetail.getAssetId(),
+                    assetDetail.getPlaceId(),
+                    blankStr,
+                    blankStr,
+                    new BigInteger("0"),
+                    new BigInteger("0")
+            );
+
+            assetDetailContract.update(newAssetDetail).send();
+
+            // 事件
+            AuditParamEvent auditParamEvent = new AuditParamEvent();
+            auditParamEvent.setAuditId(auditRequest.getAuditId());
+            auditParamEvent.setManageName(usercontract.getUserInfo(account).send().getName());
+            auditParamEvent.setType(2);
+            auditParamEvent.setUserName(usercontract.getUserInfo(audit.getBorrowerAccount()).send().getName());
+
+            eventService.insert("9",
+                    assetDetail.getAssetDetailId(),
+                    assetDetail.getPlaceId(),
+                    account,
+                    auditParamEvent.toString()
+            );
+        }
+
+
 
         // 获取当前时间
         LocalDateTime localDateTime = LocalDateTime.now();
