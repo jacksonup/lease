@@ -6,10 +6,7 @@ import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
-import com.hdu.lease.pojo.event.ApplyParamEvent;
-import com.hdu.lease.pojo.event.BorrowParamEvent;
-import com.hdu.lease.pojo.event.CreateParamEvent;
-import com.hdu.lease.pojo.event.ShelfOperateParamEvent;
+import com.hdu.lease.pojo.event.*;
 import com.hdu.lease.pojo.request.*;
 import com.hdu.lease.pojo.response.base.BaseGenericsResponse;
 import com.hdu.lease.pojo.response.base.BaseResponse;
@@ -282,8 +279,14 @@ public class AssetServiceImpl implements AssetService {
 
         for (int i = 0; i < assetList.size(); i++) {
             // 获取assetId对应的余量
-            int loseCount = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("3")).send().size();
-            int allCount = assetDetailContract.getList(assetList.get(i).getAssetId()).send().size();
+            int loseCount = assetDetailContract.getStatusListByPlaceId(
+                    placeId,
+                    assetList.get(i).getAssetId(),
+                    new BigInteger("3")).send().size();
+            int allCount = assetDetailContract.getStatusListByPlaceId(
+                    placeId,
+                    assetList.get(i).getAssetId(),
+                    new BigInteger("-1")).send().size();
 
             // 获取可用余量
             List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(placeId,
@@ -314,6 +317,9 @@ public class AssetServiceImpl implements AssetService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "用户权限不足");
         }
 
+        // 取出account
+        String account = JwtUtils.getTokenInfo(token).getClaim("account").asString();
+
         AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(detailId).send();
 
         String blankStr = "";
@@ -329,6 +335,18 @@ public class AssetServiceImpl implements AssetService {
         );
 
         assetDetailContract.update(newAssetDetail).send();
+
+        // 事件
+        BackParamEvent backParamEvent = new BackParamEvent();
+        backParamEvent.setAssetName(assertContract.getById(assetDetail.getAssetId()).send().getAssetName());
+        backParamEvent.setPlaceManagerName(userContract.getUserInfo(account).send().getName());
+
+        eventService.insert("5",
+                assetDetail.getAssetDetailId(),
+                assetDetail.getPlaceId(),
+                token,
+                backParamEvent.toString()
+        );
 
         return BaseGenericsResponse.successBaseResp("收回物资成功");
     }

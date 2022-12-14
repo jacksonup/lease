@@ -17,4 +17,10 @@ public class BackParamEvent {
     private String assetName;
 
     private String placeManagerName;
+
+    @Override
+    public String toString() {
+        return "【" + assetName + "】已由管理员【" + placeManagerName + "】扫码接收归还。";
+    }
+
 }
