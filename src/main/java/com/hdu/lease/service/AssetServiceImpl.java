@@ -299,7 +299,9 @@ public class AssetServiceImpl implements AssetService {
             assetDTO.setAssetId(assetList.get(i).getAssetId());
 
             // 获取assetId对应的余量
-            assetDTO.setFree(assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("0")).send().size());
+            int damageCount = assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("3")).send().size();
+            int allCount = assetDetailContract.getList(assetList.get(i).getAssetId()).send().size();
+            assetDTO.setFree(allCount - damageCount);
             assetDTOList.add(assetDTO);
         }
 
@@ -666,10 +668,9 @@ public class AssetServiceImpl implements AssetService {
             assetsDTO.setPlaces(placeAssetContract.getPlaceList(placeContract.getContractAddress(), asset.getAssetId()).send());
 
             // 查找总余量
-            List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getListByStatus(asset.getAssetId(), new BigInteger("0")).send();
-            assetsDTO.setRest(
-                    CollectionUtils.isEmpty(assetDetailList) ? 0 : assetDetailList.size()
-            );
+            int assetDamageSize = assetDetailContract.getListByStatus(asset.getAssetId(), new BigInteger("3")).send().size();
+            int allSize = assetDetailContract.getList(asset.getAssetId()).send().size();
+            assetsDTO.setRest(allSize - assetDamageSize);
             assetsDTOList.add(assetsDTO);
         }
 
