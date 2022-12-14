@@ -6,6 +6,8 @@ import com.hdu.lease.contract.*;
 import com.hdu.lease.mapper.ContractMapper;
 import com.hdu.lease.pojo.dto.*;
 import com.hdu.lease.pojo.entity.Contract;
+import com.hdu.lease.pojo.event.ApplyParamEvent;
+import com.hdu.lease.pojo.event.BorrowParamEvent;
 import com.hdu.lease.pojo.event.CreateParamEvent;
 import com.hdu.lease.pojo.event.ShelfOperateParamEvent;
 import com.hdu.lease.pojo.request.*;
@@ -295,8 +297,12 @@ public class AssetServiceImpl implements AssetService {
 
             assetDTO.setPlaceList(placeNameList);
             assetDTO.setAssetId(assetList.get(i).getAssetId());
+
+            // 获取assetId对应的余量
+            assetDTO.setFree(assetDetailContract.getListByStatus(assetList.get(i).getAssetId(), new BigInteger("0")).send().size());
             assetDTOList.add(assetDTO);
         }
+
 
         return BaseGenericsResponse.successBaseResp(assetDTOList);
     }
@@ -394,6 +400,55 @@ public class AssetServiceImpl implements AssetService {
 
         String auditId = UuidUtils.createUuid();
 
+        // 格式化时间
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String nowTime = localDateTime.format(dateTimeFormatter);
+
+        // 查找空闲物资随机分配assetDetailId
+        List<AssetDetailContract.AssetDetail> assetDetailList = assetDetailContract.getStatusListByPlaceId(
+                assetApplyRequest.getPlaceId(),
+                assetApplyRequest.getAssetType(),
+                new BigInteger("0")).send();
+
+        if (assetDetailList.size() < assetApplyRequest.getCount()) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "余量不足");
+        }
+        StringBuilder assetDetailIds = new StringBuilder();
+        // 修改明细物资状态
+        for (AssetDetailContract.AssetDetail assetDetail : assetDetailList) {
+            // 生成明细Id
+            assetDetailIds.append(assetDetail.getAssetDetailId()).append("#");
+
+            // 更新明细物资状态
+            AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                    assetDetail.getAssetDetailId(),
+                    assetDetail.getCurrentUserAccount(),
+                    assetDetail.getAssetId(),
+                    assetDetail.getPlaceId(),
+                    assetDetail.getBeginTime(),
+                    assetDetail.getEndTime(),
+                    new BigInteger("2"),
+                    new BigInteger("0")
+            );
+
+            assetDetailContract.update(newAssetDetail).send();
+
+            // 事件
+            ApplyParamEvent applyParamEvent = new ApplyParamEvent();
+            applyParamEvent.setCount(assetApplyRequest.getCount());
+            applyParamEvent.setApplyName(userContract.getUserInfo(borrowerAccount).send().getName());
+            applyParamEvent.setTime(localDateTime.format(formatter));
+            applyParamEvent.setPlaceName(placeContract.getById(assetApplyRequest.getPlaceId()).send().getPlaceName());
+
+            eventService.insert("8",
+                    assetDetail.getAssetDetailId(),
+                    assetDetail.getPlaceId(),
+                    borrowerAccount,
+                    applyParamEvent.toString()
+            );
+        }
+
         // 创建物资申请表单
         AuditContract.Audit newAudit = new AuditContract.Audit(
                 auditId,
@@ -404,17 +459,13 @@ public class AssetServiceImpl implements AssetService {
                 BigInteger.valueOf(assetApplyRequest.getCount()),
                 blankStr,
                 new BigInteger("1"),
-                blankStr,
-                new BigInteger(""),
+                assetDetailIds.toString(),
+                new BigInteger(nowTime),
                 new BigInteger("")
         );
 
         // 添加审批记录
         auditContract.insertAudit(newAudit, beginTime, endTime).send();
-
-        // 修改当前物资状态
-
-
 
         return BaseGenericsResponse.successBaseResp("申请成功，请耐心等待审批");
     }
@@ -438,20 +489,39 @@ public class AssetServiceImpl implements AssetService {
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String beginTime = localDateTime.format(formatter);
-//
-//        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//        localDateTime =
 
-//        AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
-//                assetDetail.getAssetDetailId(),
-//                borrowerAccount,
-//                assetDetail.getAssetId(),
-//                assetDetail.getPlaceId(),
-//                new BigInteger(beginTime),
-//        );
+        // 格式化结束时间
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime parsedBeginDateTime = LocalDateTime.parse(assetBorrowRequest.getTo(), formatter);
+        formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String endTime = parsedBeginDateTime.format(formatter);
 
+        // 更新明细物资状态
+        AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                assetDetail.getAssetDetailId(),
+                borrowerAccount,
+                assetDetail.getAssetId(),
+                assetDetail.getPlaceId(),
+                beginTime,
+                endTime,
+                new BigInteger("1"),
+                new BigInteger("0")
+        );
 
-        // 添加借用记录
+        assetDetailContract.update(newAssetDetail).send();
+
+        // 事件
+        BorrowParamEvent borrowParamEvent = new BorrowParamEvent();
+        borrowParamEvent.setBorrowName(userContract.getUserInfo(borrowerAccount).send().getName());
+        borrowParamEvent.setTo(endTime);
+        borrowParamEvent.setAssetName(assertContract.getById(assetDetail.getAssetId()).send().getAssetName());
+
+        eventService.insert("7",
+                assetDetail.getAssetDetailId(),
+                assetDetail.getPlaceId(),
+                borrowerAccount,
+                borrowParamEvent.toString()
+        );
 
         return BaseGenericsResponse.successBaseResp("借用成功");
     }

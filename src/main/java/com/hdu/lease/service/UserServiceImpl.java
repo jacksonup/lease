@@ -597,6 +597,37 @@ public class UserServiceImpl implements UserService {
             return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "token失效");
         }
 
+        // 获取明细物资ID
+        String assetDetailIds = audit.getReviewReason();
+
+        if (StringUtils.isEmpty(assetDetailIds)) {
+            return BaseGenericsResponse.failureBaseResp(BaseResponse.FAIL_STATUS, "明细物资列表异常，审批失败");
+        }
+        String[] split = assetDetailIds.split("#");
+        log.info("明细物资ID{}", Arrays.toString(split));
+
+        // 更新明细物资状态
+        for (String assetDetailId : split) {
+            AssetDetailContract.AssetDetail assetDetail = assetDetailContract.getByPrimaryKey(assetDetailId).send();
+
+            // 更新明细物资状态
+            AssetDetailContract.AssetDetail newAssetDetail = new AssetDetailContract.AssetDetail(
+                    assetDetail.getAssetDetailId(),
+                    audit.getBorrowerAccount(),
+                    assetDetail.getAssetId(),
+                    assetDetail.getPlaceId(),
+                    String.valueOf(auditBeginEndTime.getBeginTime()),
+                    String.valueOf(auditBeginEndTime.getEndTime()),
+                    new BigInteger("1"),
+                    new BigInteger("0")
+            );
+
+            assetDetailContract.update(newAssetDetail).send();
+
+            // 事件
+
+        }
+
         // 获取当前时间
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -609,8 +640,8 @@ public class UserServiceImpl implements UserService {
                 audit.getBorrowReason(),
                 audit.getCount(),
                 auditAccount,
-                new BigInteger("3"),
-                "审批通过",
+                new BigInteger("2"),
+                audit.getReviewReason(),
                 audit.getApplyTime(),
                 new BigInteger(localDateTime.format(formatter))
         );

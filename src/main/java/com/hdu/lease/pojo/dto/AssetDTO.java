@@ -30,4 +30,6 @@ public class AssetDTO {
     private List<String> placeList;
 
     private Integer value;
+
+    private Integer free;
 }

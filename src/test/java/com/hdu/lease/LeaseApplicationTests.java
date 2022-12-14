@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest
@@ -315,5 +316,11 @@ class LeaseApplicationTests {
         } catch (TencentCloudSDKException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    void test() {
+        String str = "1#2#";
+        System.out.println(Arrays.toString(str.split("#")));
     }
 }
